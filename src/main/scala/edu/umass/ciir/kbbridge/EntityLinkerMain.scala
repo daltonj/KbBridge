@@ -13,7 +13,7 @@ object EntityLinkerMain {
 
   def link(query: EntityMention): Option[WikipediaEntity] = {
     val cands = candidateGenerator.findCandidateEntities(query, 50)
-    val reranked = reranker.rerank(query, cands)
+    val reranked = reranker.rerankCandidatesGenerateFeatures(query, cands)
 
     if (reranked.size > 0) {
       println("Linking result:\tquery: " + query.entityName + " " + "\ttop cand: " + cands.head.wikipediaTitle + "\treranked: "

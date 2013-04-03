@@ -2,6 +2,7 @@ package edu.umass.ciir.kbbridge.tac
 
 import edu.umass.ciir.kbbridge.data.EntityMention
 import java.io.{File, PrintWriter}
+import edu.umass.ciir.kbbridge.eval.TacMetricsCalculator.LinkerQueryPrediction
 
 /**
  * User: jdalton
@@ -10,8 +11,6 @@ import java.io.{File, PrintWriter}
 object TacPredictionWriter {
 
   def removeFileIfExists: Boolean = true
-
-  case class LinkerQueryPrediction(query: EntityMention, tacId: Option[Seq[String]], wikiTitle: Option[String], score: Double = 0.0)
 
   def writePredicted(predictions: Seq[LinkerQueryPrediction], filename: String) {
 

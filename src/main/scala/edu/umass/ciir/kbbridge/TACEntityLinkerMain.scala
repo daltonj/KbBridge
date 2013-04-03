@@ -3,19 +3,17 @@ package cc.refectorie.user.dietz.tacco.entitylinking.loadrun
 
 import scala.collection.mutable.ListBuffer
 import collection.mutable.HashMap
-import org.lemurproject.galago.core.retrieval.ScoredDocument
 import java.io.File
 import ciir.umass.edu.learning.RankerFactory
-import org.lemurproject.galago.core.eval.compare.PairedTTest
 
 import java.io.PrintWriter
-import edu.umass.ciir.kbbridge.tac.{TacQueryUtil}
+import edu.umass.ciir.kbbridge.tac.{TacPredictionWriter, TacQueryUtil}
 import edu.umass.ciir.kbbridge.RankLibReranker
-import edu.umass.ciir.kbbridge.util.KbBridgeProperties
 import edu.umass.ciir.kbbridge.eval.{GalagoEvaluator, TacLinkingEvaluator, TacMetricsCalculator}
 import TacMetricsCalculator.LinkerQueryPrediction
-import edu.umass.ciir.kbbridge.data.{TacEntityMention, IdMap}
+import edu.umass.ciir.kbbridge.data.{ScoredWikipediaEntity, TacEntityMention, IdMap}
 import edu.umass.ciir.kbbridge.nil.{NilClusterer, NilPredictorAndClassifierMain}
+import edu.umass.ciir.kbbridge.features.FileFeatureLoader
 
 object TACEntityLinkerMain {
 
@@ -101,7 +99,7 @@ object TACEntityLinkerMain {
 
     if (trainSet) {
       val trainingQueries = TacQueryUtil.selectEvenOddSplitQueries._1
-      val trainingInstances = TacQueryUtil.loadXmlDataForQuerySet(trainingQueries, "_m2eOnly")
+      val trainingInstances = FileFeatureLoader.loadProtobufDataForQueries(trainingQueries)
       //     val rerankedResults = RankLibReranker.rerank(trainingInstances, useTacOnly, ltrModelFile, retrievalFeatureWeights, featureSet)
       //     writeTACResults(trainingQueries, rerankedResults, "./eval/tac_train1", outputEvalDir)
     }
@@ -131,7 +129,7 @@ object TACEntityLinkerMain {
         val resultsSummary = HashMap[String, Map[String, ListBuffer[Double]]]()
         tacOutputYearDir.mkdir()
 
-        val testInstances = TacQueryUtil.loadXmlDataForQuerySet(testQueries, "_m2eOnly")
+        val testInstances = FileFeatureLoader.loadProtobufDataForQueries(testQueries)
         ltrModels.map(model => {
 
           val featureSet = {
@@ -142,7 +140,7 @@ object TACEntityLinkerMain {
             }
           }
           val reranker = new RankLibReranker("./ltr_new/lambdamart_map_allyears_odd_allfeats")
-          val supervisedResults = reranker.rerank(testInstances, useTacOnly, featureSet, filteredWeights(0)._2, model._2)
+          val supervisedResults = reranker.rerankMentionBatchWithFeatures(testInstances)
           writeTACResults(testQueries, supervisedResults, tacOutputDir + "/" + year + "/" + model._1, outputEvalDir + "/" + year + "_" + model._1)
           val ranklibResults = GalagoEvaluator.evaluate(annoFile.replace(".tab", ".qrel"), supervisedResults, outputEvalDir + "/" + year + "_" + model._1)
           resultsSummary += (model._1 -> ranklibResults._2)
@@ -169,33 +167,33 @@ object TACEntityLinkerMain {
 
   }
 
-  def analyzeSignificance(methodResultMap: HashMap[String, Map[String, ListBuffer[Double]]], year: String, outputFilePrefix: String) {
-    val significanceWriter = new PrintWriter(outputFilePrefix + "/" + year + ".significance")
+  //  def analyzeSignificance(methodResultMap: HashMap[String, Map[String, ListBuffer[Double]]], year: String, outputFilePrefix: String) {
+  //    val significanceWriter = new PrintWriter(outputFilePrefix + "/" + year + ".significance")
+  //
+  //    val combinations = methodResultMap.keys.toList.combinations(2)
+  //    for (c <- combinations) {
+  //
+  //      val first = c(0)
+  //      val second = c(1)
+  //
+  //      // now we have results for all metrics
+  //      val firstMetricMap = methodResultMap(first)
+  //      val secondMetricMap = methodResultMap(second)
+  //
+  //      for (metric <- firstMetricMap.keys) {
+  //        val firstResults = firstMetricMap(metric).toArray
+  //        val secondResults = secondMetricMap(metric) toArray
+  //        val ttester = new PairedTTest(first + "_" + second)
+  //        val significance = ttester.evaluate(firstResults, secondResults)
+  //        significanceWriter.println(first + "," + second + "," + metric + ", " + significance)
+  //      }
+  //
+  //    }
+  //    significanceWriter.close()
+  //
+  //  }
 
-    val combinations = methodResultMap.keys.toList.combinations(2)
-    for (c <- combinations) {
-
-      val first = c(0)
-      val second = c(1)
-
-      // now we have results for all metrics
-      val firstMetricMap = methodResultMap(first)
-      val secondMetricMap = methodResultMap(second)
-
-      for (metric <- firstMetricMap.keys) {
-        val firstResults = firstMetricMap(metric).toArray
-        val secondResults = secondMetricMap(metric) toArray
-        val ttester = new PairedTTest(first + "_" + second)
-        val significance = ttester.evaluate(firstResults, secondResults)
-        significanceWriter.println(first + "," + second + "," + metric + ", " + significance)
-      }
-
-    }
-    significanceWriter.close()
-
-  }
-
-  def writeTACResults(queries: Seq[TacEntityMention], rerankedResults: HashMap[String, Array[ScoredDocument]], tacOutputDirPrefix: String, outputFilePrefix: String) {
+  def writeTACResults(queries: Seq[TacEntityMention], rerankedResults: Map[String, Seq[ScoredWikipediaEntity]], tacOutputDirPrefix: String, outputFilePrefix: String) {
     val finalResults = new ListBuffer[LinkerQueryPrediction]
 
     val rankingWriter = new PrintWriter(outputFilePrefix + ".ranking")
@@ -219,7 +217,7 @@ object TACEntityLinkerMain {
             val trueResult = q.groundTruthWikiTitle
             val foundIdx = trueResult match {
               case Some(tacWikiTitle) => {
-                val idx = results.findIndexOf(r => r.documentName equals tacWikiTitle)
+                val idx = results.indexWhere(r => r.wikipediaTitle equals tacWikiTitle)
                 (idx)
               }
               case None => {
@@ -232,17 +230,17 @@ object TACEntityLinkerMain {
             //            }
 
 
-            results.map(r => rankingWriter.println("%s Q0 %s %d %s KL".format(q.mentionId, r.documentName, r.rank, "%10.8f".format(r.score))))
+            results.map(r => rankingWriter.println("%s Q0 %s %d %s KL".format(q.mentionId, r.wikipediaTitle, r.rank, "%10.8f".format(r.score))))
             val topResult = results.head
-            val tacIdListOpt = IdMap.wikiTitle2TacIdMap.get(topResult.documentName)
+            val tacIdListOpt = IdMap.wikiTitle2TacIdMap.get(topResult.wikipediaTitle)
             tacIdListOpt match {
               case Some(tacIdList) if (tacIdList != "") => {
                 // TAC result, return tac ID + wiki title
-                finalResults += new LinkerQueryPrediction(q, Some(tacIdList.split(",")), Some(topResult.documentName), topResult.score)
+                finalResults += new LinkerQueryPrediction(q, Some(tacIdList.split(",")), Some(topResult.wikipediaTitle), topResult.score)
               }
               case _ => {
                 // Result is returned, but it is a non-tac result
-                finalResults += new LinkerQueryPrediction(q, None, Some(topResult.documentName), topResult.score)
+                finalResults += new LinkerQueryPrediction(q, None, Some(topResult.wikipediaTitle), topResult.score)
               }
             }
           }
@@ -290,7 +288,7 @@ object TACEntityLinkerMain {
   def writeRawRankOutput(filePrefix: String, predictions: Seq[LinkerQueryPrediction]) {
     val writer = new PrintWriter(filePrefix + ".predictions")
     for (p <- predictions) {
-      val string = p.query.mentionId + "\t" + p.query.name + "\t" + p.query.enttype + "\t" + p.query.groundTruthWikiTitle + "\t" + p.tacId.getOrElse("NONE") + "\t" + p.wikiTitle.getOrElse("NONE").trim() + "\t" + p.score
+      val string = p.query.mentionId + "\t" + p.query.entityName + "\t" + p.query.entityType + "\t" + p.tacId.getOrElse("NONE") + "\t" + p.wikiTitle.getOrElse("NONE").trim() + "\t" + p.score
       //println(p + " " + string)
       writer.println(string)
     }

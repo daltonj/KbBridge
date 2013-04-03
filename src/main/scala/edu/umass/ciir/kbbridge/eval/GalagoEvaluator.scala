@@ -1,5 +1,8 @@
 package edu.umass.ciir.kbbridge.eval
 
+import edu.umass.ciir.kbbridge.data.ScoredWikipediaEntity
+import collection.mutable
+
 object GalagoEvaluator {
 
   import org.lemurproject.galago.core.eval.QuerySetJudgments;
@@ -16,9 +19,11 @@ object GalagoEvaluator {
   val metrics = Array("map", "P1");
   val evalFormat = "%2$-16s%1$3s %3$6.5f";
 
-  def evaluate(annotationFile: String, resultMap: HashMap[String, Array[ScoredDocument]], outputFilePrefix: String): (Seq[(String, Double)], Map[String, ListBuffer[Double]]) = {
+  def evaluate(annotationFile: String, resultMap: Map[String, Seq[ScoredWikipediaEntity]], outputFilePrefix: String): (Seq[(String, Double)], Map[String, ListBuffer[Double]]) = {
     val writer = new PrintWriter(outputFilePrefix + ".galago_eval")
-    val qsr = new QuerySetResults(resultMap);
+
+    val translatedMap = translateMap(resultMap)
+    val qsr = new QuerySetResults(translatedMap);
     val qrelFile = annotationFile.replace(".tab", ".qrel")
     val qrels = new QuerySetJudgments(qrelFile,true,true)
     val evaluators = for (metric <- metrics) yield {
@@ -43,6 +48,15 @@ object GalagoEvaluator {
     })
     writer.close
     (summaryResults.toSeq, queryByQueryResults.toMap)
+  }
+
+  def translateMap(resultMap: Map[String, Seq[ScoredWikipediaEntity]]) : HashMap[String, Array[ScoredDocument]] = {
+    val hashMap = new mutable.HashMap[String, Array[ScoredDocument]]()
+    for (entry <- resultMap) {
+      val scoredDocs = entry._2.map(swe => new ScoredDocument(swe.wikipediaTitle, swe.rank, swe.score)).toArray
+      hashMap += entry._1 -> scoredDocs
+    }
+    hashMap
   }
 
 

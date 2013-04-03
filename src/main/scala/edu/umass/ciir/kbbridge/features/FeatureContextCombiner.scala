@@ -3,7 +3,7 @@ package edu.umass.ciir.kbbridge.features
 import java.io._
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
-import edu.umass.ciir.kbbridge.data.{IdMap, EntityMention}
+import edu.umass.ciir.kbbridge.data.{TacEntityMention, IdMap, EntityMention}
 import edu.umass.ciir.kbbridge.tac.TacQueryUtil
 
 
