@@ -7,6 +7,7 @@ import search.GalagoCandidateGenerator
 import serial.EntityMentionProtos.{LinkerFeature, ScoredWikipediaEntityFeatures, EntityMentionLinkerFeatures, TacEntityMentionLinkerFeatures}
 import tac.TacQueryUtil
 import util.ConfInfo
+import com.google.protobuf.TextFormat
 
 
 /*
@@ -24,7 +25,7 @@ import util.ConfInfo
  *  
  */
 object SimpleFeatureExtractor {
-  val overwrite = false
+  val overwrite = true
 
   val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
 
@@ -63,11 +64,15 @@ object SimpleFeatureExtractor {
       mentionLinkerFeatures.setMentionId(mention.mentionId)
       mentionLinkerFeatures.setSourceDocId(mention.docId)
 
-
+      println("Extracting features...")
       for ((entity, rank) <- candsWithRank) {
         val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, candidates)
         val entityWithFeatures = ScoredWikipediaEntityFeatures.newBuilder()
         entityWithFeatures.setRank(rank + 1)
+
+        entityWithFeatures.setWikipediaId(entity.wikipediaId)
+        entityWithFeatures.setWikipediaTitle(entity.wikipediaTitle)
+        entityWithFeatures.setScore(entity.score)
 
         for ((key, value) <- m2eFeatures) {
           val feature = LinkerFeature.newBuilder()
@@ -75,17 +80,21 @@ object SimpleFeatureExtractor {
           feature.setValue(value)
           entityWithFeatures.addRankingFeatures(feature)
         }
-        val svmFeatures = EntityFeaturesToSvmFormat.entityToSvmFormat(mention, entity, m2eFeatures)
-        pw.println(svmFeatures)
+        mentionLinkerFeatures.addCandidates(entityWithFeatures)
+        //val svmFeatures = EntityFeaturesToSvmFormat.entityToSvmFormat(mention, entity, m2eFeatures)
+       // pw.println(svmFeatures)
 
       }
+      tacLinkerFeatures.setMention(mentionLinkerFeatures)
       tacLinkerFeatures.build().writeTo(output)
+      println(TextFormat .printToString(tacLinkerFeatures) + "\n")
       output.close()
       pw.close()
 
     } else {
       println("Skipping existing feature file.")
     }
+    println("Done writing features...")
   }
 
   def main(args: Array[String]) {

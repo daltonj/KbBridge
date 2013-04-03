@@ -268,8 +268,8 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
 
     val uniformNer = nerReweighter.buildTrivialReweights(query, setOfContextNers, corefContext.altNames)
     val localNer = nerReweighter.buildLocalWeights(query, setOfContextNers, corefContext.altNames)
-    val rmReweightedNer = nerReweighter.reweightNersWithPseudorel(query, setOfContextNers, corefContext.altNames, selectedSentences)
-    val rmNer = nerReweighter.reweightAddNersWithPseudorel(query, setOfContextNers, corefContext.altNames, selectedSentences, addPseudoNers = true)
+   // val rmReweightedNer = nerReweighter.reweightNersWithPseudorel(query, setOfContextNers, corefContext.altNames, selectedSentences)
+   // val rmNer = nerReweighter.reweightAddNersWithPseudorel(query, setOfContextNers, corefContext.altNames, selectedSentences, addPseudoNers = true)
 
     val nerWeightNoStop = nerWeights.filter(entry => {
       val string = entry._1
@@ -287,10 +287,12 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
         val firstPassResults = galagoSearcher.search(new Query(query.mentionId, query.entityName, numCands), corefContext.altNames.toList, java.util.Collections.emptyList(), Seq()).toList
         firstPassResults
       } else List()
-    val results = galagoSearcher.searchComponents(new Query(query.mentionId, query.entityName, numCands),
-      corefContext.altNames.toList, toJavaNeighborWeights(nerWeights), firstPassResults, useSelSentences,
-      toJavaNeighborWeights(uniformNer), toJavaNeighborWeights(localNer), toJavaNeighborWeights(rmReweightedNer),
-      toJavaNeighborWeights(rmNer)).toList
+    val results = firstPassResults
+
+  //    galagoSearcher.searchComponents(new Query(query.mentionId, query.entityName, numCands),
+  //    corefContext.altNames.toList, toJavaNeighborWeights(nerWeights), firstPassResults, useSelSentences,
+  //    toJavaNeighborWeights(uniformNer), toJavaNeighborWeights(localNer), toJavaNeighborWeights(rmReweightedNer),
+  //    toJavaNeighborWeights(rmNer)).toList
 
 
     val candidateWikiEntries =
