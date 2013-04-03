@@ -1,0 +1,48 @@
+package kbbridge;
+
+option java_package="edu.umass.ciir.kbbridge.serial" ;
+option java_outer_classname = "EntityMentionProtos"   ;
+option optimize_for = SPEED;
+
+message MentionCollection {
+    optional string description = 2;
+    repeated EntityMentionLinkerFeatures mentions = 1;
+}
+message EntityMentionLinkerFeatures {
+
+ required string sourceDocId = 1;
+ required string mentionId = 2;
+ required string entityName = 3;
+ optional string entityType = 4;
+ optional NlpData nlpContext = 5;
+ repeated ScoredWikipediaEntityFeatures candidates = 6;
+}
+
+message TacEntityMentionLinkerFeatures {
+ required EntityMentionLinkerFeatures mention = 1;
+ required string nodeId = 2;
+ optional string groundTruthWikiTitle = 3;
+}
+
+message NlpData {
+ required int32 sentenceId = 1;
+ required int32 tokenBegin = 2;
+ required int32 tokenEnd = 3;
+ required int32 characterBegin = 4;
+ required int32 characterEnd = 5;
+ optional bool isRepresentative = 6;
+}
+
+message ScoredWikipediaEntityFeatures {
+ required int32 wikipediaId = 1;
+ required string wikipediaTitle = 2;
+ required double score = 3;
+ optional int32 rank = 4;
+ optional string tacIds = 5;
+ repeated LinkerFeature rankingFeatures = 6;
+}
+
+message LinkerFeature {
+ required string key = 1;
+ required double value = 2;
+}
