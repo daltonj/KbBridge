@@ -1,7 +1,7 @@
 package edu.umass.ciir.kbbridge
 
 import data.TacEntityMention
-import features.{EntityFeaturesToSvmFormat, Mention2EntityFeatureHasher}
+import features.{EntityFeaturesToSvmConverter, Mention2EntityFeatureHasher}
 import java.io.{PrintWriter, FileOutputStream, File}
 import search.GalagoCandidateGenerator
 import serial.EntityMentionProtos.{LinkerFeature, ScoredWikipediaEntityFeatures, EntityMentionLinkerFeatures, TacEntityMentionLinkerFeatures}
@@ -25,7 +25,7 @@ import com.google.protobuf.TextFormat
  *  
  */
 object SimpleFeatureExtractor {
-  val overwrite = true
+  val overwrite = false
 
   val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
 
@@ -81,13 +81,15 @@ object SimpleFeatureExtractor {
           entityWithFeatures.addRankingFeatures(feature)
         }
         mentionLinkerFeatures.addCandidates(entityWithFeatures)
-        //val svmFeatures = EntityFeaturesToSvmFormat.entityToSvmFormat(mention, entity, m2eFeatures)
+        //val svmFeatures = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
        // pw.println(svmFeatures)
 
       }
       tacLinkerFeatures.setMention(mentionLinkerFeatures)
       tacLinkerFeatures.build().writeTo(output)
-      println(TextFormat .printToString(tacLinkerFeatures) + "\n")
+      if (false) {
+        println(TextFormat .printToString(tacLinkerFeatures) + "\n")
+      }
       output.close()
       pw.close()
 

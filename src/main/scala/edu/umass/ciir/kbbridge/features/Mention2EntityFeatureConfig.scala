@@ -13,7 +13,7 @@ import edu.umass.ciir.kbbridge.features.GalagoEntityLinkingFeatureLib.GalagoEnti
  */
 
 object Mention2EntityFeatureHasher {
-  val prefixSeparator = " . "
+  val prefixSeparator = "."
   def featuresAsMap(featureConfig:Array[String], mention:EntityMention, entity:ScoredWikipediaEntity, otherCands:Seq[ScoredWikipediaEntity]):Map[String,  Double]  = {
     val featureMap = scala.collection.mutable.Map[String,  Double]()
 

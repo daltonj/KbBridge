@@ -9,8 +9,8 @@ import edu.umass.ciir.kbbridge.util.ConfInfo
  * Date: 3/29/13
  */
 case class TacEntityMention(override val docId: String, override val entityType: String, override val mentionId: String,
-                            override val entityName: String, override val corefChain: Seq[NlpXmlNerMention] = Seq(), nodeId: String)
-  extends EntityMention(docId, entityType, mentionId, entityName, corefChain) {
+                            override val entityName: String, override val corefChain: Seq[NlpXmlNerMention] = Seq(), nodeId: String, override val groundTruth:String)
+  extends EntityMention(docId, entityType, mentionId, entityName, corefChain, groundTruth) {
 
   def fullText: String = {
     val fileName = ConfInfo.sourceDir + TacFileMap.docIdToFilenameMap(docId)

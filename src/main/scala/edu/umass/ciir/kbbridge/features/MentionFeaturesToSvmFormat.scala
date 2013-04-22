@@ -1,27 +1,39 @@
 package edu.umass.ciir.kbbridge.features
 
 import edu.umass.ciir.kbbridge.data.{ScoredWikipediaEntity, EntityMention}
-import collection.mutable
+import collection.{immutable, mutable}
 
 /**
  * User: jdalton
  * Date: 4/3/13
  */
-object EntityFeaturesToSvmFormat {
+object EntityFeaturesToSvmConverter {
 
-  val domainMapFile = "./ltr/domainMap"
 
-  val domainMap = {
-    val domainMap = new mutable.HashMap[String, Int]()
-    val f = io.Source.fromFile(domainMapFile)
-    for (line <- f.getLines()) {
-      val fields = line.split("\t")
-      domainMap += (fields(0) -> fields(1).toInt)
+  def loadDomainFromFile() {
+    val domainMapFile = "./data/ltr/domainMap"
+
+    val domainMap = {
+      val domainMap = new mutable.HashMap[String, Int]()
+      val f = io.Source.fromFile(domainMapFile)
+      for (line <- f.getLines()) {
+        val fields = line.split("\t")
+        domainMap += (fields(0) -> fields(1).toInt)
+      }
+      domainMap
     }
-    domainMap
+    val m2eDomainSet = domainMap.map(_._1).toSet
+    val map = m2eDomainSet.zipWithIndex.toMap
+    featureDomainMap = map
   }
-  val m2eDomainSet = domainMap.map(_._1).toSet
-  val featureDomainMap = m2eDomainSet.zipWithIndex.toMap
+
+
+  var featureDomainMap : immutable.Map[String, Int] = Map.empty
+
+
+  def setFeatureDomain(domain: Map[String, Int]) {
+      featureDomainMap = domain
+  }
 
   //   println("Domain size: " + featureDomainMap.size)
   //   for ((feature, featureIdx) <- featureDomainMap) {
@@ -30,7 +42,8 @@ object EntityFeaturesToSvmFormat {
 
   def entityToSvmFormat(mention: EntityMention, entity: ScoredWikipediaEntity, features: Map[String, Double]) : String = {
     var sb = new StringBuilder
-    val target = -1
+
+    val target = if (mention.groundTruth equalsIgnoreCase entity.wikipediaTitle) 1 else 0
     sb append target
     sb append " "
     sb append "qid:"

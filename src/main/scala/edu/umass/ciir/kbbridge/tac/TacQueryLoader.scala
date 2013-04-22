@@ -2,7 +2,7 @@ package edu.umass.ciir.kbbridge.tac
 
 import collection.mutable.ListBuffer
 import collection.mutable
-import edu.umass.ciir.kbbridge.data.TacEntityMention
+import edu.umass.ciir.kbbridge.data.{IdMap, TacEntityMention}
 
 /**
  * User: jdalton
@@ -44,6 +44,7 @@ object TacQueryLoader {
           , mentionId = q.getQueryId
           , entityName = q.getQueryName
           , nodeId = nodeId
+          , groundTruth = IdMap.tacId2WikiTitleMap.getOrElse(q.getQueryNodeId,"")
         )
 
 

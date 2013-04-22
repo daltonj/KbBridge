@@ -12,12 +12,16 @@ import collection.mutable.ListBuffer
  */
 object FileFeatureLoader {
 
-  def loadProtobufDataForQueries(queries : Seq[EntityMention]) : Seq[TacEntityMentionLinkerFeatures] = {
+  def loadProtobufDataForQueries(queries: Seq[EntityMention]): Seq[TacEntityMentionLinkerFeatures] = {
 
     val instances = new ListBuffer[TacEntityMentionLinkerFeatures]
 
-    for (query <- queries) {
-    val filename = ConfInfo.serialComentionPath + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
+    for ((query, idx) <- queries.zipWithIndex) {
+
+      val filename = ConfInfo.serialComentionPath + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
+      if (idx % 500 == 0) {
+        println(idx + " loading file: " + filename)
+      }
       val featureFile = new File(filename)
       if (featureFile.exists()) {
         val instance = TacEntityMentionLinkerFeatures.parseFrom(new FileInputStream(featureFile))

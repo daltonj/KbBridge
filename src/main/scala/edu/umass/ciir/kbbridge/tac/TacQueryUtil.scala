@@ -40,7 +40,7 @@ object TacQueryUtil {
 
     var targetQueries = allQueries
     println("total queries:" + targetQueries.size)
-    val nonNil = targetQueries.filterNot(q => q.isNilQuery)
+    val nonNil = targetQueries.filterNot(_.isNilQuery)
     println("NonNil: " + nonNil.size)
 
     val nonNildistribution = nonNil.groupBy(t => t.entityType).map(entry => Pair(entry._1, entry._2.length))

@@ -37,9 +37,9 @@ object TACEntityLinkerMain {
     }
 
     val ltrModels = List(
-      ("lambdamart_map_local", "all_local", new RankerFactory().loadRanker("./ltr_new/lambdamart_map_allyears_odd_allfeats/")),
-      ("lambdamart_map_local_score_components", "all", new RankerFactory().loadRanker("./ltr_new/lambdamart_map_allyears_odd_allfeats_score_components/")) //,
-      /*    ("lambdamart_p1_local", "all_local", new RankerFactory().loadRanker("./ltr_new/lambdamart_p1_allyears_odd_allfeats/")),
+      ("lambdamart_map_local", "all_local", new RankerFactory().loadRanker("./data/ltr/models/tac_odd_allyears"))
+      /*("lambdamart_map_local_score_components", "all", new RankerFactory().loadRanker("./ltr_new/lambdamart_map_allyears_odd_allfeats_score_components/")) //,
+          ("lambdamart_p1_local", "all_local", new RankerFactory().loadRanker("./ltr_new/lambdamart_p1_allyears_odd_allfeats/")),
           ("lambdamart_p1_local_score_components", "all", new RankerFactory().loadRanker("./ltr_new/lambdamart_p1_allyears_odd_allfeats_score_components/"))*/
 
       /* ("ca_map_query_only", "query_only", "./ltr_new/coordinate_ascent_all_odd_query_only"),
@@ -114,6 +114,8 @@ object TACEntityLinkerMain {
       println("total non-nil queries: " + querySet.filterNot(q => q.isNilQuery).size)
 
       val summaryWriter = new PrintWriter(outputEvalDir + "/summary")
+      val reranker = new RankLibReranker("./data/ltr/models/tac_odd_allyears")
+
       for ((year, (annoFile, queries)) <- queriesByYear) {
         TacLinkingEvaluator.clearJudgments()
         TacLinkingEvaluator.loadGoldStandardFile(annoFile)
@@ -130,16 +132,8 @@ object TACEntityLinkerMain {
         tacOutputYearDir.mkdir()
 
         val testInstances = FileFeatureLoader.loadProtobufDataForQueries(testQueries)
-        ltrModels.map(model => {
 
-          val featureSet = {
-            if (model._2 equals "all") {
-              List("raw", "nv", "sent", "all_prfweight_ner", "all_prfentites_ner", "all_local_ner", "all_uniform_ner")
-            } else {
-              List()
-            }
-          }
-          val reranker = new RankLibReranker("./ltr_new/lambdamart_map_allyears_odd_allfeats")
+        ltrModels.map(model => {
           val supervisedResults = reranker.rerankMentionBatchWithFeatures(testInstances)
           writeTACResults(testQueries, supervisedResults, tacOutputDir + "/" + year + "/" + model._1, outputEvalDir + "/" + year + "_" + model._1)
           val ranklibResults = GalagoEvaluator.evaluate(annoFile.replace(".tab", ".qrel"), supervisedResults, outputEvalDir + "/" + year + "_" + model._1)
