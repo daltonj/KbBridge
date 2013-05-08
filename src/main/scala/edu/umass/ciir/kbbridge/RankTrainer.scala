@@ -93,11 +93,13 @@ object RankTrainer extends App {
 
     val train = mentionFeatures
     val shuffled = Random.shuffle(train.toList)
-    val trainValidationSplit = shuffled.splitAt((shuffled.size*0.8).toInt)
+    val trainValidationSplit = shuffled.splitAt((shuffled.size * 0.8).toInt)
 
     val trainSet = trainValidationSplit._1
     val validationSet = trainValidationSplit._2
     println("training set size: " + trainSet.size +  "\tvalidation set size:" + validationSet.size)
+
+    // why!?! We need a different way of specifying the feature domain.
     val features = getFeatureFromSampleVector
 
     val rFact = new RankerFactory()

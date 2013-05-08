@@ -32,6 +32,7 @@ object EntityLinkerMain {
     println("Ranker model: " + KbBridgeProperties.rankerModelFile)
 
     val testEntity = new SimpleEntityMention("test", "PERSON", "test01", "Bill Clinton", "")
+    link(testEntity)
 
   }
 }
