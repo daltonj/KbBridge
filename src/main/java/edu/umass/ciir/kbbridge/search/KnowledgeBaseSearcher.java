@@ -106,12 +106,12 @@ public class KnowledgeBaseSearcher {
                 String lengthString = "#lengths:document:part=lengths()";
                 Node n = StructuredQuery.parse(lengthString);
 
-        //        AggregateReader.CollectionStatistics collectionStats = m_searcher.getRetrieval().getCollectionStatistics(n);
-       //         numDocsInCollection =collectionStats.documentCount;
-       //         collectionTermFrequency = collectionStats.collectionLength;
+              AggregateReader.CollectionStatistics collectionStats = m_searcher.getRetrieval().getCollectionStatistics(n);
+              numDocsInCollection =collectionStats.documentCount;
+              collectionTermFrequency = collectionStats.collectionLength;
 
-        numDocsInCollection = m_searcher.getRetrievalStats().documentCount;
-        collectionTermFrequency = m_searcher.getRetrievalStats().collectionLength;
+       // numDocsInCollection = m_searcher.getRetrievalStats().documentCount;
+      //  collectionTermFrequency = m_searcher.getRetrievalStats().collectionLength;
 
 
     }
@@ -842,8 +842,8 @@ public class KnowledgeBaseSearcher {
                 Node root = StructuredQuery.parse(query);
                 root.getNodeParameters().set("queryType", "count");
                 Node transformed = r.transformQuery(root, queryParams);
-                //NodeStatistics statistics = r.getNodeStatistics(transformed);
-                NodeStatistics statistics = r.nodeStatistics(transformed);
+                NodeStatistics statistics = r.getNodeStatistics(transformed);
+                //NodeStatistics statistics = r.nodeStatistics(transformed);
 
                 return statistics;
             } catch (Exception e) {

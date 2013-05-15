@@ -25,7 +25,7 @@ object GalagoEvaluator {
     val translatedMap = translateMap(resultMap)
     val qsr = new QuerySetResults(translatedMap);
     val qrelFile = annotationFile.replace(".tab", ".qrel")
-    val qrels = new QuerySetJudgments(qrelFile) //,true,true)
+    val qrels = new QuerySetJudgments(qrelFile, true,true)
     val evaluators = for (metric <- metrics) yield {
       QuerySetEvaluatorFactory.instance(metric, new Parameters())
     }
