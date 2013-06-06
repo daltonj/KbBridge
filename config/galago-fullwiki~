@@ -1,0 +1,10 @@
+{
+    "index" : "/iesl/canvas/jdalton/entity-linking/full-wiki-stanf3",
+    "fields" : ["title-exact","fbname-exact","redirect-exact","anchor-exact"],
+    "stemming" : false,
+    "defaultSmoothingMu" : 96400.0,
+    "uniw" : 0.29,
+    "odw" : 0.21,
+    "uww" : 0.50
+    
+}

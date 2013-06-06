@@ -11,8 +11,8 @@ import scala.collection.JavaConversions._
 object KbBridgeProperties {
 
   var conf : Properties = null
-  //val defaultPropertiesFile = "./config/KbBridge.properties"
-  //loadProperties(defaultPropertiesFile)
+  val defaultPropertiesFile = "./config/kbbridge.properties"
+  loadProperties(defaultPropertiesFile)
 
   def galagoJsonParameterFile = conf.getProperty("KbBridge.galagoJsonParameterFile")
   def useLocalIndex = conf.getProperty("KbBridge.useLocalIndex").toBoolean
@@ -23,7 +23,7 @@ object KbBridgeProperties {
   def numberSecondPassExpansionRMTerms = conf.getProperty("KbBridge.numberSecondPassExpansionRMTerms").toInt
   def useTwoPassWorkingSet = conf.getProperty("KbBridge.useTwoPassWorkingSet").toBoolean
   def useTaccoQuery = conf.getProperty("KbBridge.useTaccoQuery").toBoolean
-  def rankerModelFile = conf.getProperty("KbBridge.rankerModelFile", "./ltr/ranklib1.model")
+  def rankerModelFile = conf.getProperty("KbBridge.rankerModelFile", "./data/ltr/models/tac_odd_allyears")
   def performNilPrediction = conf.getProperty("KbBridge.performNilPrediction", "false").toBoolean
 
   def loadProperties(propertiesFile : String) = {
