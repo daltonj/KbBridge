@@ -5,7 +5,7 @@ import edu.umass.ciir.kbbridge.util.KbBridgeProperties
 
 object EntityLinkerMain {
 
-  val nilThreshold = -0.05
+  val nilThreshold = -10
 
   val candidateGenerator = new GalagoCandidateGenerator()
 
@@ -18,6 +18,9 @@ object EntityLinkerMain {
     if (reranked.size > 0) {
       println("Linking result:\tquery: " + query.entityName + " " + "\ttop cand: " + cands.head.wikipediaTitle + "\treranked: "
         + reranked.head.wikipediaTitle + "\tscore: " + reranked.head.score + "\tNIL?: " + (if (reranked.head.score > nilThreshold) false else true))
+
+      println("Features:\n"+reranked.head.featureMap.map(_.toSeq.map(_.toString()).mkString("\n")))
+
       if (cands.head.score > nilThreshold) Some(reranked.head) else None
     } else {
       println("Linking result: query: " + query.entityName + " " + "top cand: NIL reranked: NIL")
