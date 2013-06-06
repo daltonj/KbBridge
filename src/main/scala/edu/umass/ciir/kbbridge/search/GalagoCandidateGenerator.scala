@@ -24,7 +24,6 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
                                complainOnMissingTacId: Boolean = true,
                                galagoJsonParameterFile: String = ConfInfo.galagoJsonParameterFile) {
 
-
   val defaultNumCandidates = 100
   val galagoSearcherTacKb = KnowledgeBaseSearcher.getSearcher()
 

@@ -133,6 +133,8 @@ public class ConfInfo {
     public static boolean noFirstPassQuery = Boolean.parseBoolean(conf.getProperty("no_first_pass_query", "true"));
 
     public static boolean useKbaNlpReader = Boolean.parseBoolean(conf.getProperty("useKbaNlpReader", "true"));
+    public static boolean createNlpInput = Boolean.parseBoolean(conf.getProperty("createNlpInput", "false"));
+    public static boolean useTacIdMap = Boolean.parseBoolean(conf.getProperty("useTacIdMap", "false"));
 
     static String createDir(String extractDirName)  {
         File extractDir = new File(extractDirName);

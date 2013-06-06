@@ -8,40 +8,34 @@ import edu.umass.ciir.kbbridge.util.ConfInfo
  */
 
 object IdMap {
-  private val f = io.Source.fromFile(ConfInfo.idmap)
-  private val wikiId2TacId = new HashMap[Int,  String]()
-  private val tacId2wikiId = new HashMap[ String, Int]()
-  private val tacId2tacType = new HashMap[String,  String]()
-  private val wikiTitle2TacId = new HashMap[String,  String]()
-  private val wikiTitle2WikiId = new HashMap[String,  Int]()
-  private val tacId2WikiTitle = new HashMap[String,  String]()
-  private val tacId2TacTitle = new HashMap[String,  String]()
-  for(line <- f.getLines()){
-    val sp = line.split("\t")
-    val wikiId = Integer.parseInt(sp(0))
 
-    val wikiTitle = sp(1).replaceAll(" ","_")
-    val tacTitle = sp(2)
-
-    // load wiki title. put underscores, build mapping wikititle -> tac id and back
-    val tacId = sp(3)
-    val tacType = sp(4)
-    wikiId2TacId += (wikiId -> tacId)
-    tacId2wikiId += (tacId -> wikiId)
-    tacId2tacType += (tacId -> tacType)
-
-    wikiTitle2TacId += (wikiTitle -> tacId)
-    wikiTitle2WikiId += (wikiTitle -> wikiId)
-    tacId2WikiTitle += (tacId -> wikiTitle)
-    tacId2TacTitle += (tacId -> tacTitle)
+  val wikiId2tacIdMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.wikiId2tacIdMap
+    else Map.empty[Int,String].withDefaultValue("")
   }
-  f.close()
+  val tacId2wikiIdMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.tacId2wikiIdMap
+    else Map.empty[String,Int].withDefaultValue(1)
+  }
+  val tacId2tacTypeMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.tacId2tacTypeMap
+    else Map.empty[String,String].withDefaultValue("")
+  }
 
-  val wikiId2tacIdMap = wikiId2TacId.result()
-  val tacId2wikiIdMap = tacId2wikiId.result()
-  val tacId2tacTypeMap = tacId2tacType.result()
-  val tacId2WikiTitleMap = tacId2WikiTitle.result()
-  val tacId2TacTitleMap = tacId2TacTitle.result()
-  val wikiTitle2TacIdMap = wikiTitle2TacId.result()
-  val wikiTitle2WikiIdMap = wikiTitle2WikiId.result().withDefault(wikititle => {-1})
+  val tacId2WikiTitleMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.tacId2WikiTitleMap
+    else Map.empty[String,String].withDefaultValue("")
+  }
+  val tacId2TacTitleMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.tacId2TacTitleMap
+    else Map.empty[String,String].withDefaultValue("")
+  }
+  val wikiTitle2TacIdMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.wikiTitle2TacIdMap
+    else Map.empty[String,String].withDefaultValue("")
+  }
+  val wikiTitle2WikiIdMap = {
+    if (ConfInfo.useTacIdMap) TacId2WikiTitleMap.wikiTitle2WikiIdMap
+    else Map.empty[String,Int].withDefaultValue(1)
+  }
 }
