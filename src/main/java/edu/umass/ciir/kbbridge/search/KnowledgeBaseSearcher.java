@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class KnowledgeBaseSearcher {
+public class KnowledgeBaseSearcher implements KnowledgeBaseSearcherInterface {
 
     Parameters queryParams = new Parameters();
     Search m_searcher;
@@ -126,6 +126,7 @@ public class KnowledgeBaseSearcher {
         }
     }
 
+    @Override
     public SearchResultItem[] search(Query query, List<String> coreferentStrings, List<String> nerNeighbors) throws Exception {
         Parameters p = new Parameters();
         //        p.set("indexId", id);
@@ -152,6 +153,7 @@ public class KnowledgeBaseSearcher {
 
     }
 
+    @Override
     public SearchResultItem[] search(Query query, List<String> coreferentStrings, List<String> nerNeighbors, List<String> sentences) throws Exception {
         Parameters p = new Parameters();
         //        p.set("indexId", id);
@@ -395,7 +397,7 @@ public class KnowledgeBaseSearcher {
 
     }
 
-    public SearchResultItem[] searchSnd(Query query, List<String> coreferentStrings, Map<String,Double> nerNeighbors, List<SearchResultItem> firstPassResults, List<String> sentences) throws Exception {
+    public SearchResultItem[] searchSnd(Query query, List<String> coreferentStrings, Map<String, Double> nerNeighbors, List<SearchResultItem> firstPassResults, List<String> sentences) throws Exception {
         List<String> firstPassDocIds = new ArrayList<String>();
         for(SearchResultItem item:firstPassResults){
             firstPassDocIds.add(item.identifier);
@@ -477,16 +479,17 @@ public class KnowledgeBaseSearcher {
     }
 
 
-    public SearchResultItem[] searchComponents(Query query, 
-            List<String> nameVariants, 
-            Map<String,Double> nerNeighbors, 
-            List<SearchResultItem> 
-            firstPassResults, 
-            List<String> sentences,
-            Map<String,Double> uniformNer,
-            Map<String,Double> localNer,
-            Map<String,Double> discountNer,
-            Map<String,Double> discountAdd) 
+    @Override
+    public SearchResultItem[] searchComponents(Query query,
+                                               List<String> nameVariants,
+                                               Map<String, Double> nerNeighbors,
+                                               List<SearchResultItem>
+                                                       firstPassResults,
+                                               List<String> sentences,
+                                               Map<String, Double> uniformNer,
+                                               Map<String, Double> localNer,
+                                               Map<String, Double> discountNer,
+                                               Map<String, Double> discountAdd)
     
     throws Exception {
         List<String> firstPassDocIds = new ArrayList<String>();
@@ -625,7 +628,7 @@ public class KnowledgeBaseSearcher {
 
     }
 
-    public SearchResultItem[] searchType(Query query, 
+    public SearchResultItem[] searchType(Query query,
             String type,
             List<String> coreferentStrings,
             List<String> contextStrings) throws Exception {
@@ -712,6 +715,7 @@ public class KnowledgeBaseSearcher {
         }
     }
 
+    @Override
     public SearchResultItem[] search(Query query) throws Exception {
         Parameters p = new Parameters();
         //        p.set("indexId", id);
@@ -791,6 +795,7 @@ public class KnowledgeBaseSearcher {
     }
 
 
+    @Override
     public SearchResultItem getDocument(String docId, boolean getTerms) throws Exception {
         //        throw new UnsupportedOperationException("fix galago");
         synchronized (m_searcher) {

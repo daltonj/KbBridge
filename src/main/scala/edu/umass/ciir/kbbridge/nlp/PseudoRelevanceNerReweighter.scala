@@ -67,11 +67,11 @@ class PseudoRelevanceNerReweighter {
   // =================
   // reweight ners
 
-  def buildTrivialReweights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]): Map[String, Double] = {
+  def buildTrivialReweights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]=Seq()): Map[String, Double] = {
     nercontext.map(ner => (TextNormalizer.normalizeText(ner) -> 1.0)).toMap
   }
 
-  def buildLocalWeights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]): Map[String, Double] = {
+  def buildLocalWeights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]=Seq()): Map[String, Double] = {
 
     val distinctNers = nercontext.distinct
     val normtext = TextNormalizer.normalizeText(query.fullText)
