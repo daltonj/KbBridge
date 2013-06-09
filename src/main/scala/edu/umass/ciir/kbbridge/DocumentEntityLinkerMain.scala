@@ -1,11 +1,11 @@
 package edu.umass.ciir.kbbridge
 
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
-import search.{EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval, GalagoCandidateGenerator}
+import search.{EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
 import util.{ConfInfo, KbBridgeProperties}
 import text2kb.{GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
 
-object NewEntityLinkerMain {
+object DocumentEntityLinkerMain {
 
   val nilThreshold = -10
 
@@ -59,7 +59,7 @@ object NewEntityLinkerMain {
     KbBridgeProperties.loadProperties("./config/kbbridge.properties")
     println("Ranker model: " + KbBridgeProperties.rankerModelFile)
 
-    val testEntity = new SimpleEntityMention("test", "PERSON", "test01", "Bill Clinton", "")
+    val testEntity = new SimpleEntityMention("test", entityType = "PERSON", mentionId = "test01", entityName = "Bill Clinton", fullText = "William Jefferson \"Bill\" Clinton is an American politician who served as the 42nd President of the United States from 1993 to 2001. Inaugurated at age 46, he was the third-youngest president.")
     link(testEntity)
 
   }
