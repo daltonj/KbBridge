@@ -38,15 +38,12 @@ class RankLibReranker(rankerModelFile: String) {
     //          candidates = candidates.filter(_.data.asInstanceOf[GalagoWikipediaEntity[TacELQueryImpl]].tacIds.length > 0)
     //        }
 
-    val docIds = candidates.map(_.wikipediaTitle)
-    val docs = RetrievalMap.getSearcher.getDocuments(docIds)
-    for (doc <- candidates) {
-      doc.document = docs(doc.wikipediaTitle)
-    }
-
     val candsWithRank = candidates.zipWithIndex
     for ((entity, rank) <- candsWithRank) {
       // now for the features
+      val galagoDoc = RetrievalMap.getSearcher.getDocument(entity.wikipediaTitle)
+      entity.document = galagoDoc
+
       val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, entities)
       val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
       try {
