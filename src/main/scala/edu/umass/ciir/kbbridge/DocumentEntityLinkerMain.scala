@@ -1,9 +1,8 @@
 package edu.umass.ciir.kbbridge
 
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
-import search.{RetrievalMap, EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
-import util.{ConfInfo, KbBridgeProperties}
-import text2kb.{KnowledgeBaseCandidateGenerator, GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
+import util.KbBridgeProperties
+import text2kb.KnowledgeBaseCandidateGenerator
 
 object DocumentEntityLinkerMain {
 
@@ -14,7 +13,7 @@ object DocumentEntityLinkerMain {
 
   def link(query: EntityMention): Option[WikipediaEntity] = {
 
-    val cands = KnowledgeBaseCandidateGenerator.apply().retrieveCandidates(query, 10)
+    val cands = KnowledgeBaseCandidateGenerator().retrieveCandidates(query, 10)
 
     for (cand <- cands){
       println(cand.wikipediaTitle+"  "+cand.score+" "+cand.rank+"\n")
