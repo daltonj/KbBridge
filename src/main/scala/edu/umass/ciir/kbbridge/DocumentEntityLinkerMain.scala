@@ -21,7 +21,7 @@ object DocumentEntityLinkerMain {
 
   def link(query: EntityMention): Option[WikipediaEntity] = {
 
-    val entityRepr = reprGenerator.createQVEntityRepr(query)
+    val entityRepr = reprGenerator.createQVMSEntityRepr(query)
 
     val searchResult = candidateGenerator.search(entityRepr, 10)
     val cands =galagoDocConverter.galagoResultToWikipediaEntities(searchResult)
