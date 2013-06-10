@@ -348,8 +348,6 @@ trait QueryOnlyFeatureGenerator extends FeatureGenerator {
 
 
   def generateQueryOnlyFeatures(mention: EntityMention, entity: WikipediaEntity, otherCands: Seq[WikipediaEntity]) {
-    val document = searcher.getDocument(entity.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
-
     val acronymFeats = acronymFeatures(mention, entity)
     mapToFeature(acronymFeats.toMap)
 
@@ -359,22 +357,22 @@ trait QueryOnlyFeatureGenerator extends FeatureGenerator {
     val charFeatures = characterSimilarityFeatures(mention.entityName, entity.wikipediaTitle)
     mapToFeature(charFeatures.toMap)
 
-    val fieldTokens = fieldTokenMap(document)
+    val fieldTokens = fieldTokenMap(entity.document)
     val fieldProbMap = fieldMatchFeatures(mention.entityName, fieldTokens)
     for ((field, (fieldProb, queryProb)) <- fieldProbMap) {
       addValueFeature(featurePrefix, fieldLikelihood + "_" + field, fieldProb)
       addValueFeature(featurePrefix, fieldProbability + "_" + field, queryProb)
     }
 
-    val exactMatchFieldCounts = exactFieldMatchMap(mention.entityName, document)
+    val exactMatchFieldCounts = exactFieldMatchMap(mention.entityName, entity.document)
 
     val exactFieldFeatures = exactFieldMatchFeatures(exactMatchFieldCounts)
     mapToFeature(exactFieldFeatures.toMap)
 
-    val linkPopularity = inlinkFeatures(document)
+    val linkPopularity = inlinkFeatures(entity.document)
     mapToFeature(linkPopularity.toMap)
 
-    val linkProbs = linkProbability(TextNormalizer.normalizeText(mention.entityName), document, exactMatchFieldCounts)
+    val linkProbs = linkProbability(TextNormalizer.normalizeText(mention.entityName), entity.document, exactMatchFieldCounts)
     mapToFeature(linkProbs.toMap)
   }
 
@@ -399,9 +397,10 @@ object QueryOnlyTest {
       featureMap += (prefix + prefixSeparator + category -> value)
     }
 
+    val searcher = KnowledgeBaseSearcher.getSearcher()
     val candidateGenerator = new GalagoCandidateGenerator()
     val entity = candidateGenerator.getDocumentAsEntity("American_Civil_Liberties_Union")
-
+    entity.get.document = searcher.getDocument(entity.get.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
     val mention = new SimpleEntityMention(docId = "eng-NG-31-101177-10944212", entityType = "ORG", mentionId = "EL_00012", entityName = "ACLU", fullText="")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with QueryOnlyFeatureGenerator {}
 

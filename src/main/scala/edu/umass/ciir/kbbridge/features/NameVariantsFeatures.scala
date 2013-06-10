@@ -5,7 +5,8 @@ import scala.collection.mutable.ListBuffer
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.nlp.{TextNormalizer, NaiveQueryContextBuilder}
 import edu.umass.ciir.kbbridge.util.ConfInfo
-import edu.umass.ciir.kbbridge.search.GalagoCandidateGenerator
+import edu.umass.ciir.kbbridge.search.{KnowledgeBaseSearcher, GalagoCandidateGenerator}
+import org.lemurproject.galago.core.parse.Document
 
 trait NameVariantsFeatures extends QueryOnlyFeatureGenerator {
 
@@ -22,8 +23,6 @@ trait NameVariantsFeatures extends QueryOnlyFeatureGenerator {
       case _ => println("Unable to get context for mention: " + mention)
     }
 
-    val document = searcher.getDocument(entity.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
-
     val nameVariantMap = HashMap[String, ListBuffer[Double]]()
 
     val nameplusQuery = mention.entityName :: altNames
@@ -35,18 +34,18 @@ trait NameVariantsFeatures extends QueryOnlyFeatureGenerator {
       val charFeatures = characterSimilarityFeatures(altName, entity.name)
       addToAggregateMap(charFeatures.toMap, nameVariantMap)
 
-      val fieldTokens = fieldTokenMap(document)
+      val fieldTokens = fieldTokenMap(entity.document)
       val fieldProbMap = fieldMatchFeatures(altName, fieldTokens)
       for ((field, (fieldProb, queryProb)) <- fieldProbMap) {
         nameVariantMap.getOrElseUpdate(fieldLikelihood + "_" + field, ListBuffer[Double]()) += fieldProb
         nameVariantMap.getOrElseUpdate(fieldProbability + "_" + field, ListBuffer[Double]()) += queryProb
       }
 
-      val exactMatchFieldCounts = exactFieldMatchMap(altName, document)
+      val exactMatchFieldCounts = exactFieldMatchMap(altName, entity.document)
       val exactFieldFeatures = exactFieldMatchFeatures(exactMatchFieldCounts)
       addToAggregateMap(exactFieldFeatures.toMap, nameVariantMap)
 
-      val linkProbs = linkProbability(TextNormalizer.normalizeText(altName), document, exactMatchFieldCounts)
+      val linkProbs = linkProbability(TextNormalizer.normalizeText(altName), entity.document, exactMatchFieldCounts)
       addToAggregateMap(linkProbs.toMap, nameVariantMap)
 
     }
@@ -88,8 +87,12 @@ object NameVariantsTest {
     val candidateGenerator = new GalagoCandidateGenerator()
     val entity = candidateGenerator.getDocumentAsEntity("Food_and_Drug_Administration")
 
-    val mention = new SimpleEntityMention(docId = "eng-NG-31-100906-10932919", entityType = "ORG", mentionId = "EL_00637", entityName = "fda", fullText="")
+    val mention = new SimpleEntityMention(docId = "eng-NG-31-100906-10932919", entityType = "ORG", mentionId = "EL_00637", entityName = "fda", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with NameVariantsFeatures {}
+
+    val searcher = KnowledgeBaseSearcher.getSearcher()
+    val document = searcher.getDocument(entity.get.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
+    entity.get.document = document
 
     queryOnlyFeatures.documentContextNameVariantFeatures(mention, entity.get)
     featureMap.keySet.toList.sortWith((s1, s2) => (s1 < s2)).map(p => println(p + "=" + featureMap.get(p).get))

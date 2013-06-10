@@ -9,15 +9,17 @@ import scala.collection.mutable.ListBuffer
 
 import ciir.umass.edu.learning.{RankerFactory, DataPoint}
 import collection.mutable
+import search.KnowledgeBaseSearcher
 import serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
 import util.ConfInfo
 import scala.collection.JavaConversions._
+import org.lemurproject.galago.tupleflow.Parameters
 
 
 class RankLibReranker(rankerModelFile: String) {
 
   val ltrModel = new RankerFactory().loadRanker(rankerModelFile)
-
+  EntityFeaturesToSvmConverter.loadDomainFromFile()
   def rerankCandidatesGenerateFeatures(mention: EntityMention, entities: Seq[ScoredWikipediaEntity]): Array[ScoredWikipediaEntity] = {
 
     var scoredDocuments = new ListBuffer[ScoredWikipediaEntity]
@@ -35,17 +37,30 @@ class RankLibReranker(rankerModelFile: String) {
     //        if (useTacOnly) {
     //          candidates = candidates.filter(_.data.asInstanceOf[GalagoWikipediaEntity[TacELQueryImpl]].tacIds.length > 0)
     //        }
-    val candsWithRank = candidates.zipWithIndex
 
+    val docIds = candidates.map(_.wikipediaTitle)
+    val p = new Parameters()
+    p.set("terms", true)
+    p.set("tags", true)
+
+    val docs = KnowledgeBaseSearcher.getSearcher().getUnderlyingSearcher().getDocuments(docIds, p)
+    for (doc <- candidates) {
+      doc.document = docs(doc.wikipediaTitle)
+    }
+
+    val candsWithRank = candidates.zipWithIndex
     for ((entity, rank) <- candsWithRank) {
       // now for the features
       val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, entities)
       val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
+      try {
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
-      //  println(score)
+      //println(score)
       scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, entity.metadata, score, (rank + 1))
-
+      } catch {
+        case ex: Exception => println(ex.getMessage + " data line:\n" + svmString)
+      }
     }
 
     //println(query)
@@ -78,7 +93,6 @@ class RankLibReranker(rankerModelFile: String) {
     //          candidates = candidates.filter(_.data.asInstanceOf[GalagoWikipediaEntity[TacELQueryImpl]].tacIds.length > 0)
     //        }
     //    val candsWithRank = candidates.zipWithIndex
-    EntityFeaturesToSvmConverter.loadDomainFromFile()
     for (entity <- entities) {
       // now for the features
       val m2eFeatures = entity.getRankingFeaturesList.map(f => f.getKey -> f.getValue).toMap

@@ -25,6 +25,7 @@ object EntityFeaturesToSvmConverter {
     val m2eDomainSet = domainMap.map(_._1).toSet
     val map = m2eDomainSet.zipWithIndex.toMap
     featureDomainMap = map
+    println("Feature domain map loaded with: " + featureDomainMap.size + " entries")
   }
 
 

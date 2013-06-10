@@ -1,5 +1,8 @@
 package edu.umass.ciir.kbbridge.search;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import edu.umass.ciir.kbbridge.util.ConfInfo;
 import edu.umass.ciir.memindex.Query;
 import edu.umass.ciir.models.StopWordList;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class KnowledgeBaseSearcher {
@@ -47,6 +51,16 @@ public class KnowledgeBaseSearcher {
     private Long collectionTermFrequency;
 
     private static HashMap<String, KnowledgeBaseSearcher> searcherMap = new HashMap<String, KnowledgeBaseSearcher>();
+
+    LoadingCache<String, NodeStatistics> termStatisticsCache = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(
+                    new CacheLoader<String, NodeStatistics>() {
+                        public NodeStatistics load(String key) throws Exception {
+                            return getStatistics(key);
+                        }
+                    });
 
     public static KnowledgeBaseSearcher getSearcher() throws Exception {
         return getSearcher("default");
@@ -793,6 +807,7 @@ public class KnowledgeBaseSearcher {
 
     public SearchResultItem getDocument(String docId, boolean getTerms) throws Exception {
         //        throw new UnsupportedOperationException("fix galago");
+        System.out.println("fetching doc: " + docId);
         synchronized (m_searcher) {
 
             Parameters p1 = new Parameters();
@@ -836,6 +851,7 @@ public class KnowledgeBaseSearcher {
     }
 
     public NodeStatistics getStatistics(String query) throws Exception {
+        System.out.println("fetching statistics: " + query);
         synchronized (m_searcher) {
             try {
                 Retrieval r = m_searcher.getRetrieval();
@@ -871,7 +887,8 @@ public class KnowledgeBaseSearcher {
         String normalized = cleanString(term.toLowerCase().trim());
         if (normalized.length() > 0) {        
             String transformedText = "\"" + normalized + "\"" +"." + field ;
-            NodeStatistics statistics = getStatistics(transformedText);
+
+            NodeStatistics statistics = termStatisticsCache.get(transformedText);
             return statistics.nodeFrequency;
         } else {
             return 0;

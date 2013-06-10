@@ -5,6 +5,8 @@ import scala.collection.JavaConversions._
 import edu.umass.ciir.kbbridge.data.{ScoredWikipediaEntity, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.util.{RedisFeatureConnection, ConfInfo}
 import edu.umass.ciir.kbbridge.features.GalagoEntityLinkingFeatureLib.GalagoEntityLinkingFeatures
+import edu.umass.ciir.kbbridge.search.KnowledgeBaseSearcher
+import org.lemurproject.galago.core.parse.Document
 
 //import cc.refectorie.user.dietz.tacco.features.mention2kbentity.WikifierEntityLinkingFeatureLib.WikifierEntityLinkingFeatures
 
@@ -50,12 +52,19 @@ trait Mention2EntityFeatureConfigurator extends Mention2EntityFeatureTrait with 
   
   def generateFeature(mention:EntityMention, entity:ScoredWikipediaEntity, otherCands:Seq[ScoredWikipediaEntity]) {
 
-
     if(galago) galagoFeatures.generateGalagoEntityLinkingFeatures(mention, entity, otherCands)
     if(queryonly) queryOnlyFeatures.generateQueryOnlyFeatures(mention, entity, otherCands)
     if(namevariants) nameVariantsFeatures.documentContextNameVariantFeatures(mention, entity)
     if(localdoc) localDocumentContext.generateDocumentContextFeatures(mention, entity, otherCands)
 
+  }
+
+  // For timing purposes
+  def time[R](block: => R): Tuple2[R, Long] = {
+    val t0 = System.currentTimeMillis
+    val result = block
+    val t1 = System.currentTimeMillis
+    Tuple2(result, t1-t0)
   }
 }
 
