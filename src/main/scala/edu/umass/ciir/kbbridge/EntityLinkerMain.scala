@@ -2,7 +2,7 @@ package edu.umass.ciir.kbbridge
 
 import data.repr.EntityRepr
 import data.{ScoredWikipediaEntity, WikipediaEntity}
-import search.{EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
+import search.{RetrievalMap, EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
 import util.{ConfInfo, KbBridgeProperties}
 import text2kb.{GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
 
@@ -11,19 +11,15 @@ object EntityLinkerMain {
   val nilThreshold = -10
 
   val reprGenerator = new TextEntityReprGenerator()
-  val galago = new GalagoRetrieval(
-    jsonConfigFile= ConfInfo.galagoJsonParameterFile,
-    galagoUseLocalIndex = true
-  )
+  val galago = RetrievalMap.getSearcher
   val candidateGenerator = new EntityReprRetrieval(galago, EntityRetrievalWeighting(0.5, 0.25, 0.05, 0.2))
-  val galagoDocConverter = new GalagoDoc2WikipediaEntity(galago)
 
   val reranker = new RankLibReranker(KbBridgeProperties.rankerModelFile)
 
   def link(entityRepr: EntityRepr): Option[WikipediaEntity] = {
 
     val searchResult = candidateGenerator.search(entityRepr, 10)
-    val cands =galagoDocConverter.galagoResultToWikipediaEntities(searchResult)
+    val cands =GalagoDoc2WikipediaEntity.galagoResultToWikipediaEntities(searchResult)
 
     for (cand <- cands){
       println(cand.wikipediaTitle+"  "+cand.score+" "+cand.rank+"\n")
@@ -44,14 +40,14 @@ object EntityLinkerMain {
     }
   }
 
-  def printCandidateInfo(cand: ScoredWikipediaEntity) {
-    for ((key, v) <- cand.metadata; if key != "xml") {
-      if (key == "contextLinks") {
-        println(key + "\t\t" + (v.split("\n").take(10).mkString("", "\n", "...\n")))
-      } else
-        println(key + "\t\t" + v)
-    }
-  }
+//  def printCandidateInfo(cand: ScoredWikipediaEntity) {
+//    for ((key, v) <- cand.metadata; if key != "xml") {
+//      if (key == "contextLinks") {
+//        println(key + "\t\t" + (v.split("\n").take(10).mkString("", "\n", "...\n")))
+//      } else
+//        println(key + "\t\t" + v)
+//    }
+//  }
 
 
   def main(args: Array[String]) {

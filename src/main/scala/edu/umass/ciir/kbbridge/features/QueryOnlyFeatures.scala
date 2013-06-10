@@ -5,12 +5,13 @@ import scala.collection.JavaConversions._
 import org.lemurproject.galago.core.parse.Document
 import scala.collection.mutable.ListBuffer
 import edu.umass.ciir.models._
-import edu.umass.ciir.kbbridge.search.{GalagoCandidateGenerator, KnowledgeBaseSearcher}
+import edu.umass.ciir.kbbridge.search.{RetrievalMap}
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import util.{SetMeasures, StringSimilarity}
 import com.aliasi.spell.{EditDistance, JaroWinklerDistance}
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.util.ConfInfo
+import edu.umass.ciir.kbbridge.text2kb.GalagoDoc2WikipediaEntity
 
 trait QueryOnlyFeatureGenerator extends FeatureGenerator {
 
@@ -65,7 +66,7 @@ trait QueryOnlyFeatureGenerator extends FeatureGenerator {
   val linkProb = "linkProb"
   val externalLinkProb = "externalLinkProb"
 
-  val searcher = KnowledgeBaseSearcher.getSearcher()
+  val searcher = RetrievalMap.getSearcher
 
 
   def exactFieldMatchMap(mentionName: String, galagoEnitityDoc: Document) = {
@@ -397,14 +398,16 @@ object QueryOnlyTest {
       featureMap += (prefix + prefixSeparator + category -> value)
     }
 
-    val searcher = KnowledgeBaseSearcher.getSearcher()
-    val candidateGenerator = new GalagoCandidateGenerator()
-    val entity = candidateGenerator.getDocumentAsEntity("American_Civil_Liberties_Union")
-    entity.get.document = searcher.getDocument(entity.get.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
+    val entity = GalagoDoc2WikipediaEntity.idToEntity("American_Civil_Liberties_Union")
+
+    val searcher = RetrievalMap.getSearcher
+    val document = searcher.getDocument(entity.wikipediaTitle)
+    entity.document = document
+
     val mention = new SimpleEntityMention(docId = "eng-NG-31-101177-10944212", entityType = "ORG", mentionId = "EL_00012", entityName = "ACLU", fullText="")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with QueryOnlyFeatureGenerator {}
 
-    queryOnlyFeatures.generateQueryOnlyFeatures(mention, entity.get, Seq())
+    queryOnlyFeatures.generateQueryOnlyFeatures(mention, entity, Seq())
     featureMap.keySet.toList.sortWith((s1, s2) => (s1 < s2)).map(p => println(p + "=" + featureMap.get(p).get))
 
   }

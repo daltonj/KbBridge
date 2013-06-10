@@ -19,12 +19,10 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
  * Time: 2:52 PM
  */
 
-case class EntityRetrievalWeighting(lambdaQ:Double, lambdaV:Double, lambdaS:Double, lambdaM:Double)
+case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
 
 class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:EntityRetrievalWeighting) {
-  val defaultParams = GalagoQueryLib.paramSeqDep(galago.globalParameters, (0.21, 0.29, 0.50 ))
-
 
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
 //    p.set("odw", 0.21D)
@@ -60,9 +58,9 @@ class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:Entit
         queryM ->  entityRetrievalWeighting.lambdaM
       ))
 
-    System.out.println(fullQuery)
+    println(fullQuery)
 
-    galago.retrieveScoredDocuments(fullQuery, defaultParams, numResults)
+    galago.retrieveScoredDocuments(fullQuery, numResults)
   }
 
 

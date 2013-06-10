@@ -7,7 +7,7 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 import edu.umass.ciir.models._
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention}
 import edu.umass.ciir.kbbridge.util.ConfInfo
-import edu.umass.ciir.kbbridge.search.KnowledgeBaseSearcher
+import edu.umass.ciir.kbbridge.search.{RetrievalMap, GalagoRetrieval}
 
 
 /**
@@ -97,53 +97,54 @@ class PseudoRelevanceNerReweighter {
 
   def reweightNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String]): Map[String, Double] = {
 
-    // fire query
-    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, nercontext.distinct, selectedNormSentences)
-
-    if (pseudoresults.length > 0) {
-
-      // get results as TacELQueries
-      val pseudoQueries_score = new ListBuffer[(EntityMention, Double)]()
-      val scoredDocs = new ListBuffer[ScoredDocument]
-      for (r <- pseudoresults; if r.identifier != query.docId) {
-        val pq = new SimpleEntityMention(docId = r.identifier, entityType = "UNK", mentionId = r.identifier, entityName = query.entityName, fullText="")
-        println("PSEUDORESULT\t" + query.mentionId + "\t" + r.identifier + "\t" + r.score)
-        scoredDocs += new ScoredDocument(r.identifier, r.rank, r.score)
-        pseudoQueries_score += Pair(pq, r.score)
-      }
-
-      val scores = RelevanceModel.logsToPosteriors2(scoredDocs.toList)
-
-      val nerDocFreq = scala.collection.mutable.HashMap[String, Int]()
-      for (ner <- nercontext) nerDocFreq += (ner -> 0)
-      val nerReweights = scala.collection.mutable.HashMap[String, Double]()
-      for (ner <- nercontext) nerReweights += (ner -> 0.0)
-
-      println("scanning " + pseudoQueries_score.length + " pseudo results")
-
-      for ((pq, score) <- pseudoQueries_score) {
-        val normtext = TextNormalizer.normalizeText(pq.fullText)
-        val normTokens = normtext.split("\\s+")
-        val docLm = new LanguageModel(4)
-        docLm.addDocument(normTokens, true)
-        docLm.calculateProbabilities()
-
-        for (ner <- nercontext) {
-          val termEntry = docLm.getTermEntry(TextNormalizer.normalizeText(ner))
-          if (termEntry != null) {
-            val oldCount = nerDocFreq(ner)
-            nerDocFreq.update(ner, oldCount + 1)
-            val oldWeight = nerReweights(ner)
-            val curWeight = termEntry.getProbability * scores(pq.docId)
-            nerReweights.update(ner, oldWeight + curWeight)
-          }
-        }
-      }
-      val filteredWeights = nerReweights.filter(_._2 > 0.0).toMap
-      filteredWeights
-    } else {
-      Map()
-    }
+    throw new Exception("Update me to use the new entity representation!")
+//    // fire query
+//    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, nercontext.distinct, selectedNormSentences)
+//
+//    if (pseudoresults.length > 0) {
+//
+//      // get results as TacELQueries
+//      val pseudoQueries_score = new ListBuffer[(EntityMention, Double)]()
+//      val scoredDocs = new ListBuffer[ScoredDocument]
+//      for (r <- pseudoresults; if r.identifier != query.docId) {
+//        val pq = new SimpleEntityMention(docId = r.identifier, entityType = "UNK", mentionId = r.identifier, entityName = query.entityName, fullText="")
+//        println("PSEUDORESULT\t" + query.mentionId + "\t" + r.identifier + "\t" + r.score)
+//        scoredDocs += new ScoredDocument(r.identifier, r.rank, r.score)
+//        pseudoQueries_score += Pair(pq, r.score)
+//      }
+//
+//      val scores = RelevanceModel.logsToPosteriors2(scoredDocs.toList)
+//
+//      val nerDocFreq = scala.collection.mutable.HashMap[String, Int]()
+//      for (ner <- nercontext) nerDocFreq += (ner -> 0)
+//      val nerReweights = scala.collection.mutable.HashMap[String, Double]()
+//      for (ner <- nercontext) nerReweights += (ner -> 0.0)
+//
+//      println("scanning " + pseudoQueries_score.length + " pseudo results")
+//
+//      for ((pq, score) <- pseudoQueries_score) {
+//        val normtext = TextNormalizer.normalizeText(pq.fullText)
+//        val normTokens = normtext.split("\\s+")
+//        val docLm = new LanguageModel(4)
+//        docLm.addDocument(normTokens, true)
+//        docLm.calculateProbabilities()
+//
+//        for (ner <- nercontext) {
+//          val termEntry = docLm.getTermEntry(TextNormalizer.normalizeText(ner))
+//          if (termEntry != null) {
+//            val oldCount = nerDocFreq(ner)
+//            nerDocFreq.update(ner, oldCount + 1)
+//            val oldWeight = nerReweights(ner)
+//            val curWeight = termEntry.getProbability * scores(pq.docId)
+//            nerReweights.update(ner, oldWeight + curWeight)
+//          }
+//        }
+//      }
+//      val filteredWeights = nerReweights.filter(_._2 > 0.0).toMap
+//      filteredWeights
+//    } else {
+//      Map()
+//    }
 
 
     //    nercontextExtended.map(ner => (ner -> 1.0)).toMap
@@ -152,12 +153,13 @@ class PseudoRelevanceNerReweighter {
   val nlpQueryBuilder = new NlpQueryContextBuilder()
 
   def reweightAddNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String], addPseudoNers: Boolean = false): Map[String, Double] = {
+    throw new Exception("Update me to use the new entity representation!")
 
-    // fire query
-    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, java.util.Collections.emptyList(), selectedNormSentences)
-    val scoredDocs = pseudoresults.map(r => new ScoredDocument(r.identifier, r.rank, r.score))
-    val results = reweightDocsAddNew(scoredDocs, query, nercontext, nameVariances, selectedNormSentences, addPseudoNers)
-    results
+//    // fire query
+//    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, java.util.Collections.emptyList(), selectedNormSentences)
+//    val scoredDocs = pseudoresults.map(r => new ScoredDocument(r.identifier, r.rank, r.score))
+//    val results = reweightDocsAddNew(scoredDocs, query, nercontext, nameVariances, selectedNormSentences, addPseudoNers)
+//    results
   }
 
   def reweightDocsAddNew(pseudoresults: Seq[ScoredDocument], query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String], addPseudoNers: Boolean = false): Map[String, Double] = {
@@ -257,8 +259,8 @@ class PseudoRelevanceNerReweighter {
   // todo this should be done in the TacNlpQueryContext builder or the NaiveQUeryCOntextBUilder
 
 
-  def pseudoKbSearcher: KnowledgeBaseSearcher = {
-    KnowledgeBaseSearcher.getSearcher("pseudorel", ConfInfo.galagoPseudoJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoSrv, ConfInfo.galagoPseudoPort, ConfInfo.pseudoQueryType, "pseudorelevance")
+  def pseudoKbSearcher: GalagoRetrieval = {
+    RetrievalMap.getSearcher("pseudorel", ConfInfo.galagoPseudoJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoSrv, ConfInfo.galagoPseudoPort, ConfInfo.pseudoQueryType, "pseudorelevance")
   }
 
   def getNormSentences(query: EntityMention): Seq[String] = {

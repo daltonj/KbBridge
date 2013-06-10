@@ -9,7 +9,7 @@ import org.lemurproject.galago.tupleflow.{FakeParameters, Parameters}
 import scala.collection.JavaConversions._
 import org.lemurproject.galago.core.parse.{TagTokenizer, Document}
 import scala.collection.JavaConversions._
-import org.lemurproject.galago.core.retrieval.{ScoredPassage, ScoredDocument}
+import org.lemurproject.galago.core.retrieval.{RetrievalFactory, ScoredPassage, ScoredDocument}
 import org.lemurproject.galago.core.scoring.WeightedTerm
 import scala._
 
@@ -30,22 +30,19 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
 
     val queryParams = new Parameters
     val defaultSmoothingMu = globalParameters.getDouble("defaultSmoothingMu")
-    val m_searcher = new Search(globalParameters)
+    val m_searcher = RetrievalFactory.instance(globalParameters)
 
 
     def rmExpansion(rawQuery:String, queryParams:Parameters):Seq[WeightedTerm]={
-      val rmR = new RelevanceModelExpander(m_searcher.getRetrieval, queryParams)
+      val rmR = new RelevanceModelExpander(m_searcher, queryParams)
       rmR.runExpansion(rawQuery,queryParams)
     }
 
-    def getDocuments(documentNames:Seq[String], params:Parameters= new Parameters()):Map[String, Document] = {
+    def getDocuments(identifier:Seq[String]):Map[String, Document] = {
       val p = new Parameters()
       p.copyFrom(globalParameters)
-      p.copyFrom(params)
-      getDocuments_(documentNames, p)
-    }
-
-    private def getDocuments_(identifier:Seq[String], p:Parameters, tries: Int=5):Map[String, Document] ={
+      p.set("terms", true)
+      p.set("tags", true)
       try {
         m_searcher synchronized {
           val docmap = m_searcher.getDocuments(identifier, p)
@@ -56,26 +53,35 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
           println("NPE while fetching documents " + identifier)
           throw ex
         }
-        case ex: IOException => {
-          if (tries > 0) {
-            try {
-              Thread.sleep(100)
-            } catch {
-              case e: InterruptedException => {}
-            }
-            return getDocuments_(identifier, p, tries - 1)
-          } else {
-            throw ex
-          }
-        }
+
+        case ex => throw ex
       }
     }
+
+  def getDocument(identifier:String): Document = {
+    val p = new Parameters()
+    p.copyFrom(globalParameters)
+    p.set("terms", true)
+    p.set("tags", true)
+    try {
+      m_searcher synchronized {
+        val doc = m_searcher.getDocument(identifier, p)
+        doc
+      }
+    } catch {
+      case ex: NullPointerException => {
+        println("NPE while fetching documents " + identifier)
+        throw ex
+      }
+      case ex => throw ex
+    }
+  }
 
 
     def getStatistics(query: String): AggregateReader.NodeStatistics = {
       m_searcher synchronized {
         try {
-          val r = m_searcher.getRetrieval
+          val r = m_searcher
           val root = StructuredQuery.parse(query)
           root.getNodeParameters.set("queryType", "count")
           val transformed = r.transformQuery(root, queryParams)
@@ -100,41 +106,38 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
       }
     }
 
-
-
-
     def retrieveAnnotatedScoredDocuments(query:String, params:Parameters, resultCount:Int, debugQuery:((Node, Node)=> Unit)=((x,y)=>{})):Seq[(ScoredDocument, AnnotatedNode)] = {
       params.set("annotate",true)
-      for(scoredAnnotatedDoc <- retrieveScoredDocuments(query, params, resultCount, debugQuery)) yield {
+      for(scoredAnnotatedDoc <- retrieveScoredDocuments(query, resultCount, Some(params), debugQuery)) yield {
         (scoredAnnotatedDoc, scoredAnnotatedDoc.annotation)
       }
     }
-    def retrieveScoredDocuments(query:String, params:Parameters, resultCount:Int, debugQuery:((Node, Node)=> Unit)=((x,y)=>{})):Seq[ScoredDocument] = {
+    def retrieveScoredDocuments(query:String, resultCount:Int, params:Option[Parameters]=None, debugQuery:((Node, Node)=> Unit)=((x,y)=>{})):Seq[ScoredDocument] = {
       //    val begin = System.currentTimeMillis()
       val p = new Parameters()
       p.copyFrom(globalParameters)
-      p.copyFrom(params)
+      params match { case Some(params) => p.copyFrom(params)
+      case None => {}}
       p.set("startAt", 0)
       p.set("resultCount", resultCount)
       p.set("requested", resultCount)
       val res = m_searcher synchronized {
         val root = StructuredQuery.parse(query)
-        val retrieval = m_searcher.getRetrieval
-        val transformed = retrieval.transformQuery(root, p)
+        val transformed = m_searcher.transformQuery(root, p)
         debugQuery(root, transformed)
-        retrieval.runQuery(transformed, p)
+        m_searcher.runQuery(transformed, p)
       }
       //    println("@retrieveScoredDocuments took "+TimeTools.printTimeDifference(System.currentTimeMillis() - begin)+"\tjsonConfigFile = "+jsonConfigFile)//+ " params: "+params.toPrettyString)
       res
     }
 
     def retrieveScoredPassages(query:String, params:Parameters, resultCount:Int, debugQuery:((Node, Node)=> Unit)=((x,y)=>{})):Seq[ScoredPassage]= {
-      retrieveScoredDocuments(query,params, resultCount, debugQuery).map(_.asInstanceOf[ScoredPassage])
+      retrieveScoredDocuments(query, resultCount, Some(params), debugQuery).map(_.asInstanceOf[ScoredPassage])
     }
 
     def retrieveAnnotatedScoredPassages(query:String, params:Parameters, resultCount:Int, debugQuery:((Node, Node)=> Unit)=((x,y)=>{})):Seq[(ScoredPassage, AnnotatedNode)] = {
       params.set("annotate",true)
-      for(scoredAnnotatedDoc <- retrieveScoredDocuments(query, params, resultCount, debugQuery)) yield {
+      for(scoredAnnotatedDoc <- retrieveScoredDocuments(query, resultCount, Some(params), debugQuery)) yield {
         (scoredAnnotatedDoc.asInstanceOf[ScoredPassage], scoredAnnotatedDoc.annotation)
       }
     }

@@ -1,8 +1,8 @@
 package edu.umass.ciir.kbbridge.data
 
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
-import edu.umass.ciir.kbbridge.search.KnowledgeBaseSearcher
 import edu.umass.ciir.kbbridge.util.WikiXmlTextExtractor
+import edu.umass.ciir.kbbridge.search.RetrievalMap
 
 /**
  * User: jdalton
@@ -11,8 +11,8 @@ import edu.umass.ciir.kbbridge.util.WikiXmlTextExtractor
 object WikipediaDocumentSource extends DocumentTextSource {
 
   override def fullText (docId:String) {
-    val searcher = KnowledgeBaseSearcher.getSearcher()
-    val document = searcher.getDocument(docId, true).document
+    val searcher = RetrievalMap.getSearcher
+    val document = searcher.getDocument(docId)
     val text = TextNormalizer.normalizeText(WikiXmlTextExtractor.extractText(document))
     text
   }

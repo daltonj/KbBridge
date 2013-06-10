@@ -82,7 +82,7 @@ object RankTrainer extends App {
       val mentionResults = new RankList()
       for (entity <- mention.getCandidatesList) {
         val m2eFeatures = entity.getRankingFeaturesList.map(f => f.getKey -> f.getValue).toMap
-        val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, Map(), entity.getScore, entity.getRank)
+        val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, entity.getScore, entity.getRank)
         // this could be better; directly construct a datapoint object instead of serializing the data to a string and then re-parsing it.
         val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(tacEntityMention, entityCandidate, m2eFeatures)
         val featureData = new DataPoint(svmString)

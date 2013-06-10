@@ -3,9 +3,10 @@ package edu.umass.ciir.kbbridge
 import data.TacEntityMention
 import features.{EntityFeaturesToSvmConverter, Mention2EntityFeatureHasher}
 import java.io.{PrintWriter, FileOutputStream, File}
-import search.GalagoCandidateGenerator
+import search.{EntityRetrievalWeighting, EntityReprRetrieval, RetrievalMap}
 import serial.EntityMentionProtos.{LinkerFeature, ScoredWikipediaEntityFeatures, EntityMentionLinkerFeatures, TacEntityMentionLinkerFeatures}
 import tac.TacQueryUtil
+import text2kb.{KnowledgeBaseCandidateGenerator, GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
 import util.ConfInfo
 import com.google.protobuf.TextFormat
 
@@ -29,8 +30,6 @@ object SimpleFeatureExtractor {
 
   val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
 
-  lazy val candidateGenerator = new GalagoCandidateGenerator()
-
   def extractFeatures(mention: TacEntityMention) {
 
     val docId = mention.docId
@@ -49,7 +48,9 @@ object SimpleFeatureExtractor {
     println("Writing feature file: " + file.getAbsolutePath)
     if (!file.exists() || overwrite) {
       println("Fetching candidates for mention: " + mention.mentionId + " " + mention.docId + " " + mention.entityName)
-      val candidates = candidateGenerator.findCandidateEntities(mention, ConfInfo.maxCandidates)
+
+      val candidates = KnowledgeBaseCandidateGenerator.apply().retrieveCandidates(mention, ConfInfo.maxCandidates)
+
       val candsWithRank = candidates.zipWithIndex
 
       val output = new FileOutputStream(file)

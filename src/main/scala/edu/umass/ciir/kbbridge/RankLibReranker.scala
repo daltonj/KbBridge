@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 
 import ciir.umass.edu.learning.{RankerFactory, DataPoint}
 import collection.mutable
-import search.KnowledgeBaseSearcher
+import search.RetrievalMap
 import serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
 import util.ConfInfo
 import scala.collection.JavaConversions._
@@ -39,11 +39,7 @@ class RankLibReranker(rankerModelFile: String) {
     //        }
 
     val docIds = candidates.map(_.wikipediaTitle)
-    val p = new Parameters()
-    p.set("terms", true)
-    p.set("tags", true)
-
-    val docs = KnowledgeBaseSearcher.getSearcher().getUnderlyingSearcher().getDocuments(docIds, p)
+    val docs = RetrievalMap.getSearcher.getDocuments(docIds)
     for (doc <- candidates) {
       doc.document = docs(doc.wikipediaTitle)
     }
@@ -57,7 +53,7 @@ class RankLibReranker(rankerModelFile: String) {
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
      //println(score)
-      scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, entity.metadata, score, (rank + 1), featureMap = Some(m2eFeatures))
+      scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, score, (rank + 1), featureMap = Some(m2eFeatures))
       } catch {
         case ex: Exception => println(ex.getMessage + " data line:\n" + svmString)
       }
@@ -96,12 +92,12 @@ class RankLibReranker(rankerModelFile: String) {
     for (entity <- entities) {
       // now for the features
       val m2eFeatures = entity.getRankingFeaturesList.map(f => f.getKey -> f.getValue).toMap
-      val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, Map(), entity.getScore, entity.getRank)
+      val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, entity.getScore, entity.getRank)
       val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entityCandidate, m2eFeatures)
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
       //  println(score)
-      scoredDocuments += new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, Map(), score, entity.getRank)
+      scoredDocuments += new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, score, entity.getRank)
 
     }
 

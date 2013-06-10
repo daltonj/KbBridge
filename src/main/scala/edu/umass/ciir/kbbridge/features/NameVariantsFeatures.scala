@@ -5,8 +5,8 @@ import scala.collection.mutable.ListBuffer
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.nlp.{TextNormalizer, NaiveQueryContextBuilder}
 import edu.umass.ciir.kbbridge.util.ConfInfo
-import edu.umass.ciir.kbbridge.search.{KnowledgeBaseSearcher, GalagoCandidateGenerator}
-import org.lemurproject.galago.core.parse.Document
+import edu.umass.ciir.kbbridge.search.{RetrievalMap}
+import edu.umass.ciir.kbbridge.text2kb.GalagoDoc2WikipediaEntity
 
 trait NameVariantsFeatures extends QueryOnlyFeatureGenerator {
 
@@ -84,17 +84,16 @@ object NameVariantsTest {
       featureMap += (prefix + prefixSeparator + category -> value)
     }
 
-    val candidateGenerator = new GalagoCandidateGenerator()
-    val entity = candidateGenerator.getDocumentAsEntity("Food_and_Drug_Administration")
+    val entity = GalagoDoc2WikipediaEntity.idToEntity("Food_and_Drug_Administration")
 
     val mention = new SimpleEntityMention(docId = "eng-NG-31-100906-10932919", entityType = "ORG", mentionId = "EL_00637", entityName = "fda", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with NameVariantsFeatures {}
 
-    val searcher = KnowledgeBaseSearcher.getSearcher()
-    val document = searcher.getDocument(entity.get.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
-    entity.get.document = document
+    val searcher = RetrievalMap.getSearcher
+    val document = searcher.getDocument(entity.wikipediaTitle)
+    entity.document = document
 
-    queryOnlyFeatures.documentContextNameVariantFeatures(mention, entity.get)
+    queryOnlyFeatures.documentContextNameVariantFeatures(mention, entity)
     featureMap.keySet.toList.sortWith((s1, s2) => (s1 < s2)).map(p => println(p + "=" + featureMap.get(p).get))
 
   }

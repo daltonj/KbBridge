@@ -5,10 +5,11 @@ import edu.umass.ciir.models._
 import org.lemurproject.galago.core.parse.Document
 import scala.collection.mutable.HashMap
 import util.{SetMeasures, LanguageModelFeatures}
-import edu.umass.ciir.kbbridge.search.{GalagoCandidateGenerator, KnowledgeBaseSearcher}
+import edu.umass.ciir.kbbridge.search.{RetrievalMap}
 import edu.umass.ciir.kbbridge.nlp.{NlpQueryContextBuilder, TextNormalizer}
 import edu.umass.ciir.kbbridge.util.{ConfInfo, WikiLinkExtractor}
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
+import edu.umass.ciir.kbbridge.text2kb.{GalagoDoc2WikipediaEntity, KnowledgeBaseCandidateGenerator}
 
 trait LocalDocumentFeatures extends FeatureGenerator {
 
@@ -24,7 +25,7 @@ trait LocalDocumentFeatures extends FeatureGenerator {
   val nerDice = "nerDice"
   val nerJaccard = "nerJaccard"
 
-  val searcher = KnowledgeBaseSearcher.getSearcher()
+  val searcher = RetrievalMap.getSearcher
 
   def contextSimFeatures(mContext: String, eContext: String, contextType: String) {
     val textSimFeatures = LanguageModelFeatures.computeLmSimilarity(mContext, eContext, true);
@@ -163,17 +164,15 @@ object LocalDocumentFeaturesTest {
       featureMap += (prefix + prefixSeparator + category -> value)
     }
 
-    val candidateGenerator = new GalagoCandidateGenerator()
-    val entity = candidateGenerator.getDocumentAsEntity("American_Automobile_Association")
-
+    val entity = GalagoDoc2WikipediaEntity.idToEntity("American_Automobile_Association")
     val mention = new SimpleEntityMention(docId = "eng-WL-11-174611-12978627", entityType = "ORG", mentionId = "EL_00637", entityName = "Alabama", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with LocalDocumentFeatures {}
 
-    val searcher = KnowledgeBaseSearcher.getSearcher()
-    val document = searcher.getDocument(entity.get.wikipediaTitle, ConfInfo.fetchGalagoParsedDocument).document
-    entity.get.document = document
+    val searcher = RetrievalMap.getSearcher
+    val document = searcher.getDocument(entity.wikipediaTitle)
+    entity.document = document
 
-    queryOnlyFeatures.generateDocumentContextFeatures(mention, entity.get, Seq())
+    queryOnlyFeatures.generateDocumentContextFeatures(mention, entity, Seq())
     featureMap.keySet.toList.sortWith((s1, s2) => (s1 < s2)).map(p => println(p + "=" + featureMap.get(p).get))
 
   }

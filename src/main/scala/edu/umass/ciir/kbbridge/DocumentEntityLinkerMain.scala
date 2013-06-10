@@ -1,40 +1,30 @@
 package edu.umass.ciir.kbbridge
 
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
-import search.{EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
+import search.{RetrievalMap, EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
 import util.{ConfInfo, KbBridgeProperties}
-import text2kb.{GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
+import text2kb.{KnowledgeBaseCandidateGenerator, GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
 
 object DocumentEntityLinkerMain {
 
   val nilThreshold = -10
 
-  val reprGenerator = new TextEntityReprGenerator()
-  val galago = new GalagoRetrieval(
-    jsonConfigFile= ConfInfo.galagoJsonParameterFile,
-    galagoUseLocalIndex = true
-  )
-  val candidateGenerator = new EntityReprRetrieval(galago, EntityRetrievalWeighting(0.5, 0.25, 0.05, 0.2))
-  val galagoDocConverter = new GalagoDoc2WikipediaEntity(galago)
 
   val reranker = new RankLibReranker(KbBridgeProperties.rankerModelFile)
 
   def link(query: EntityMention): Option[WikipediaEntity] = {
 
-    val entityRepr = reprGenerator.createQVMSEntityRepr(query)
-
-    val searchResult = candidateGenerator.search(entityRepr, 10)
-    val cands =galagoDocConverter.galagoResultToWikipediaEntities(searchResult)
+    val cands = KnowledgeBaseCandidateGenerator.apply().retrieveCandidates(query, 10)
 
     for (cand <- cands){
       println(cand.wikipediaTitle+"  "+cand.score+" "+cand.rank+"\n")
-      for((key,v) <- cand.metadata; if key != "xml") {
-        if (key == "contextLinks"){
-          println(key + "\t\t"+ (v.split("\n").take(10).mkString("","\n","...\n")))
-        } else
-          println(key +"\t\t"+v)
-      }
-//        +cand.metadata)
+//      for((key,v) <- cand; if key != "xml") {
+//        if (key == "contextLinks"){
+//          println(key + "\t\t"+ (v.split("\n").take(10).mkString("","\n","...\n")))
+//        } else
+//          println(key +"\t\t"+v)
+//      }
+////        +cand.metadata)
     }
 
 
