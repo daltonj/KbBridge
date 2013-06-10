@@ -12,6 +12,9 @@ import scala.collection.JavaConversions._
 import org.lemurproject.galago.core.retrieval.{RetrievalFactory, ScoredPassage, ScoredDocument}
 import org.lemurproject.galago.core.scoring.WeightedTerm
 import scala._
+import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
+import org.lemurproject.galago.core.index.AggregateReader.NodeStatistics
+import java.util.concurrent.TimeUnit
 
 /**
  * User: dietz
@@ -19,6 +22,17 @@ import scala._
  * Time: 12:08 PM
  */
 class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, galagoSrv: String = "", galagoPort: String="", val usePassage:Boolean = false) {
+
+
+   val termStatisticsCache  : LoadingCache[String, NodeStatistics]= CacheBuilder.newBuilder()
+    .maximumSize(1000)
+    .expireAfterWrite(10, TimeUnit.MINUTES)
+    .build(
+    new CacheLoader[String, NodeStatistics]() {
+      def load(key: String) : NodeStatistics = {
+        return getStatistics(key);
+      }
+    });
 
     val globalParameters = Parameters.parse(new File(jsonConfigFile))
 
@@ -59,6 +73,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     }
 
   def getDocument(identifier:String): Document = {
+    println("Loading document: " + identifier)
     val p = new Parameters()
     p.copyFrom(globalParameters)
     p.set("terms", true)
@@ -78,7 +93,8 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
 
-    def getStatistics(query: String): AggregateReader.NodeStatistics = {
+    def getStatistics(query: String): NodeStatistics = {
+      println("fetching stats: " + query)
       m_searcher synchronized {
         try {
           val r = m_searcher
@@ -99,7 +115,8 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     def getFieldTermCount(cleanTerm:String, field: String): Long = {
       if (cleanTerm.length > 0) {
         val transformedText = "\"" + cleanTerm + "\"" + "." + field
-        val statistics = getStatistics(transformedText)
+        val statistics = termStatisticsCache.get(transformedText);
+        //val statistics = getStatistics(transformedText)
         statistics.nodeFrequency
       } else {
         0
