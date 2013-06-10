@@ -61,49 +61,6 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
     None
   }
 
-  //   def loadCandidateRunFile(): Option[HashMap[String, ListBuffer[WikipediaEntity]]] = {
-  //
-  //      println("LOADING RUN FILE: " + runFileName)
-  //       if (useRunFile && new File(runFileName).exists()) {
-  //
-  //       val runResults = new HashMap[String, ListBuffer[WikipediaEntity]]()
-  //       try {
-  //           val source = Source.fromFile(runFileName, "UTF-8")
-  //           for (line <- source.getLines ) {
-  //               val data = line.split("\\s+")
-  //               val queryId = data(0)
-  //               val wikiId = data(1).toInt
-  //               val galagoId = data(2)
-  //               val score = data(3).toDouble
-  //               val tacIds = data(4).split(",")
-  //               val source = data(5)
-  //
-  //               val candidate = new WikipediaEntity(
-  //                   galagoId,
-  //                   wikipediaId = wikiId,
-  //                   metadata = null,
-  //                   score = score,
-  //                   tacIds = tacIds,
-  //                   source = if(tacIds.isEmpty) "fullwiki" else source
-  //                       )
-  //               var curList = runResults.getOrElse(queryId, new ListBuffer[WikipediaEntity]())
-  //               curList += candidate
-  //               runResults.put(queryId, curList)
-  //           }
-  //       } catch {
-  //         // corrupt file; return none.
-  //         case e: Exception =>  return None
-  //       }
-  //        if (runResults.size > 0) {
-  //          Some(runResults)
-  //        } else {
-  //          None
-  //        }
-  //       } else {
-  //         None
-  //       }
-  //   }
-
 
   def galagoResultToEntity(r: Search.SearchResultItem, score: Double, galagoSearcher: KnowledgeBaseSearcher, source: String): ScoredWikipediaEntity = {
     val wikititle = r.identifier
@@ -116,10 +73,6 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
     }
 
     val tacIdListOpt = IdMap.wikiTitle2TacIdMap.get(wikititle)
-
-    //    // debug
-    //    if(complainOnMissingTacId && (tacIdListOpt==None || tacIdListOpt.get != "" )) System.err.println("IdMap.wikiTitle2TacIdMap contains empty string as tacIdList for wikiTitle "+wikititle)
-
 
 
     tacIdListOpt match {
@@ -148,21 +101,6 @@ class GalagoCandidateGenerator(candidateFileKey: String = ConfInfo.candidateFile
   }
 
   def findCandidateEntities(query: EntityMention, numCands: Int): Seq[ScoredWikipediaEntity] = {
-
-    //    if (useRunFile && candsFromRun == None && writer == None) {
-    //         candsFromRun = loadCandidateRunFile
-    //         writer = getRunWriter
-    //     }
-    //
-    //     if (useRunFile && booleanRunFileExists && candsFromRun != None) {
-    //        val cands = candsFromRun.get.getOrElse(query.mentionId, Seq[WikipediaEntity]())
-    //        var results = cands.map(_.asInstanceOf[ScoredWikipediaEntity]).toSeq take numCands
-    //        if (cands.size == 0) {
-    //          results = findCandidatesUsingCorefContext(galagoSearcherTacKb,query,numCands,useOracle, "wiki")
-    //        }
-    //        results
-    //     } else {
-
 
     val cands =
       if (ConfInfo.useNerContextInQuery) {
