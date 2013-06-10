@@ -56,8 +56,8 @@ class RankLibReranker(rankerModelFile: String) {
       try {
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
-      //println(score)
-      scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, entity.metadata, score, (rank + 1))
+     //println(score)
+      scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, entity.metadata, score, (rank + 1), featureMap = Some(m2eFeatures))
       } catch {
         case ex: Exception => println(ex.getMessage + " data line:\n" + svmString)
       }

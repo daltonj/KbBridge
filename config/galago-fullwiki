@@ -1,5 +1,5 @@
 {
-    "index" : "/usr/aubury/scratch2/jdalton/entity-linking/indexes/wikipedia-wex-01272012-galago34",
+    "index" : "/home/dietz/kbbridge/code/KbBridge/index/shortwiki/",
     "fields" : ["title-exact","fbname-exact","redirect-exact","anchor-exact"],
     "stemming" : false,
     "defaultSmoothingMu" : 96400.0,

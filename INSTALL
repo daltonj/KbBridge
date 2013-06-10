@@ -1,0 +1,85 @@
+================================================
+Installation prerequesites for using KbBridge
+================================================
+
+-------------------------
+Before compiling KbBridge
+-------------------------
+
+
+1) Install protobuf
+If you are working on Ubuntu, use:
+    sudo apt-get install protobuf-compiler
+You may have to fix the path with
+    sudo ln -s /usr/bin/protoc /usr/local/bin/protoc
+For other Operating Systems, download from here: https://developers.google.com/protocol-buffers/
+
+
+2) Download and Install CIIR_Shared
+Download or clone repository from: https://github.com/daltonj/CIIRShared
+From inside the directory call
+    mvn install
+
+3) Download and install LingPipe 4.1.0
+Download and unpack from: http://alias-i.com/lingpipe/web/download.html
+From download location call
+    mvn install:install-file -Dfile=lingpipe-4.1.0.jar -DgroupId=com.aliasi -DartifactId=lingpipe -Dversion=4.1.0 -Dpackaging=jar
+
+------------------
+Compiling KbBridge
+------------------
+
+cd into the kbbridge directory (where the pom.xml is located)
+    mvn clean compile
+
+If you experience any errors, please contact us.
+
+
+--------------------
+Configuring KbBridge
+--------------------
+
+create a copy of resources/kbbridge-blake.properties and place it in resources/kbbridge.properties
+(Alternatively, you can also place it in resources/kbbridge-$username@$computername.properties)
+
+Make sure all paths are available on your system
+
+Check paths in ../config/galago-fullwiki
+Either obtain the Wikipedia index from us, or create your own, see below.
+
+
+-----------------
+Running KbBridge
+-----------------
+
+KbBridge is meant to be a framework that you adapt to your needs.
+For an example, run the class "EntityLinkerMain".
+
+
+-------------------
+Index your own Data
+-------------------
+
+If do not want to use our Wikipedia index, you can create your own from an annotated WEX dump
+You need to gave Galago3.4 installed and access to the binary "galago"
+
+create a json file "wikiparser.json" with this content:
+---------------------------------
+{
+"filetype" : "wex" ,
+"parser" : {
+  "externalParsers" : [
+  {
+    "filetype" : "wex",
+    "class" : "org.lemurproject.galago.core.parse.WikiWexParser"
+  }
+ ]
+}
+}
+----------------------------------
+
+Call
+    core/target/appassembler/bin/galago build --tokenizer/fields+title --tokenizer/fields+title-exact --tokenizer/fields+fbname --tokenizer/fields+fbname-exact --tokenizer/fields+fbtype --tokenizer/fields+category --tokenizer/fields+redirect --tokenizer/fields+redirect-exact --tokenizer/fields+kb_class --tokenizer/fields+anchor --tokenizer/fields+anchor-exact --tokenizer/fields+text --tokenizer/fields+stanf_anchor --tokenizer/fields+stanf_anchor-exact --indexPath=$indexdir --inputPath+$inputdir wikiparser.json
+
+
+And add $indexname to ../config/galago-fullwiki  (full paths required)

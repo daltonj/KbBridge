@@ -100,20 +100,22 @@ object NlpExtractor {
     val fResult = new File(ConfInfo.nlpExtractPathStanford+source+"/"+docidSafe+".xml")
 
     if(!fResult.exists()){
-        //System.err.println("Can't find NLP ressource at "+fResult.getAbsolutePath)
-        // cant find result
-        val fRaw = new File(ConfInfo.nlpExtractOutputPathStanford+source+"/"+docidSafe)
-        if(!fRaw.exists()){
-          exportRawtext(fRaw, fullText())
-//          System.err.println("Stanford NLP Extraction needed for "+fRaw.getAbsolutePath)
-          None
-        } else {
-          // wait for the extractopm to finish
-          tagFile(fRaw)
+        if(ConfInfo.createNlpInput){
+          //System.err.println("Can't find NLP ressource at "+fResult.getAbsolutePath)
+          // cant find result
+          val fRaw = new File(ConfInfo.nlpExtractOutputPathStanford+source+"/"+docidSafe)
+          if(!fRaw.exists()){
+            exportRawtext(fRaw, fullText())
+  //          System.err.println("Stanford NLP Extraction needed for "+fRaw.getAbsolutePath)
+            None
+          } else {
+            // wait for the extractopm to finish
+            tagFile(fRaw)
 
-//          System.err.println("waiting for Stanford NLP Extraction to finish for "+fRaw.getAbsolutePath+" (created at "+new Date(fRaw.lastModified()).toLocaleString+")")
-          None
-        }
+  //          System.err.println("waiting for Stanford NLP Extraction to finish for "+fRaw.getAbsolutePath+" (created at "+new Date(fRaw.lastModified()).toLocaleString+")")
+            None
+          }
+        } else None
     } else {
       Some(fResult)
      }

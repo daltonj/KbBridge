@@ -11,5 +11,5 @@ case class WikipediaEntity (wikipediaTitle:String, wikipediaId:Int, metadata: Ma
 }
 
 class ScoredWikipediaEntity(override val wikipediaTitle:String, override val wikipediaId:Int,
-                                 override val metadata: Map[String,String], var score:Double, var rank:Int)
+                                 override val metadata: Map[String,String], var score:Double, var rank:Int, val featureMap:Option[Map[String,Double]]=None)
   extends WikipediaEntity (wikipediaTitle,wikipediaId, metadata)
