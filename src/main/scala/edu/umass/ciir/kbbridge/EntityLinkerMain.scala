@@ -1,16 +1,16 @@
 package edu.umass.ciir.kbbridge
 
 import data.repr.EntityRepr
-import data.{ScoredWikipediaEntity, WikipediaEntity}
-import search.{RetrievalMap, EntityRetrievalWeighting, GalagoRetrieval, EntityReprRetrieval}
-import util.{ConfInfo, KbBridgeProperties}
-import text2kb.{GalagoDoc2WikipediaEntity, TextEntityReprGenerator}
+import data.{WikipediaEntity}
+import search.{RetrievalMap, EntityRetrievalWeighting, EntityReprRetrieval}
+import util.{KbBridgeProperties}
+import text2kb.{QVSMLocalTextEntityRepr, GalagoDoc2WikipediaEntity}
 
 object EntityLinkerMain {
 
   val nilThreshold = -10
 
-  val reprGenerator = new TextEntityReprGenerator()
+  val reprGenerator = QVSMLocalTextEntityRepr
   val galago = RetrievalMap.getSearcher
   val candidateGenerator = new EntityReprRetrieval(galago, EntityRetrievalWeighting(0.5, 0.25, 0.05, 0.2))
 

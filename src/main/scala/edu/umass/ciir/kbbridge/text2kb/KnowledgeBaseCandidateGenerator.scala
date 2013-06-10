@@ -12,17 +12,16 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 object KnowledgeBaseCandidateGenerator {
 
   def apply() : KnowledgeBaseCandidateGenerator = {
-    new KnowledgeBaseCandidateGenerator(RetrievalMap.getSearcher, EntityRetrievalWeighting(0.5, 0.5, 0.0, 0.0))
+    new KnowledgeBaseCandidateGenerator(RetrievalMap.getSearcher, EntityRetrievalWeighting(0.5, 0.5, 0.0, 0.0), QVTextEntityRepr)
   }
 
 }
 
-class KnowledgeBaseCandidateGenerator(val galago : GalagoRetrieval, val weighting: EntityRetrievalWeighting) {
-  val reprGenerator = new TextEntityReprGenerator()
+class KnowledgeBaseCandidateGenerator(val galago : GalagoRetrieval, val weighting: EntityRetrievalWeighting, val reprGenerator :TextEntityReprGenerator) {
   val candidateGenerator = new EntityReprRetrieval(galago, weighting)
 
   def retrieveCandidates(mention: EntityMention, numCandidates: Int) : Seq[ScoredWikipediaEntity] = {
-    val retrievedCands = candidateGenerator.search(reprGenerator.createQVEntityRepr(mention), numCandidates)
+    val retrievedCands = candidateGenerator.search(reprGenerator.createEntityRepr(mention), numCandidates)
     val cands = GalagoDoc2WikipediaEntity.galagoResultToWikipediaEntities(retrievedCands)
     cands
   }
