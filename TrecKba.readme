@@ -7,7 +7,7 @@ create a json file "kba-index.json" with this content:
       "externalParsers" : [
       {
         "filetype" : "xz",
-        "class" : " org.lemurproject.galago.contrib.parse.TrecKBAParser"
+        "class" : "org.lemurproject.galago.contrib.parse.TrecKBAParser"
       }
      ]
     },
@@ -24,8 +24,8 @@ Call
     core/target/appassembler/bin/galago build --indexPath=$indexdir --inputPath+$inputdir kba-index.json
 
 
-/mnt/nfs/collections/TREC/kba-2012/kba-stream-corpus-2012/2011-10-09-*
-
+=======================================================
+Example json
 {
 "inputPath" : ["/home/dietz/collections/2011-10-09-00",
                 "/home/dietz/collections/2011-10-09-01",
@@ -37,7 +37,7 @@ Call
       "externalParsers" : [
       {
         "filetype" : "xz",
-        "class" : " org.lemurproject.galago.contrib.parse.TrecKBAParser"
+        "class" : "org.lemurproject.galago.contrib.parse.TrecKBAParser"
       }
      ]
     },
