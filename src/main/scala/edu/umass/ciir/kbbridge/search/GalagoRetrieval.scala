@@ -15,13 +15,14 @@ import scala._
 import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
 import org.lemurproject.galago.core.index.AggregateReader.NodeStatistics
 import java.util.concurrent.TimeUnit
+import edu.umass.ciir.kbbridge.data.DocumentProvider
 
 /**
  * User: dietz
  * Date: 6/7/13
  * Time: 12:08 PM
  */
-class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, galagoSrv: String = "", galagoPort: String="", val usePassage:Boolean = false) {
+class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, galagoSrv: String = "", galagoPort: String="", val usePassage:Boolean = false) extends DocumentProvider {
 
 
    val termStatisticsCache  : LoadingCache[String, NodeStatistics]= CacheBuilder.newBuilder()
@@ -72,9 +73,9 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
       }
     }
 
-  def getDocument(identifier:String): Document = {
-    println("Loading document: " + identifier)
+  def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
     val p = new Parameters()
+    params match {case Some(param) => p.copyFrom(param); case _ => {}}
     p.copyFrom(globalParameters)
     p.set("terms", true)
     p.set("tags", true)
@@ -93,8 +94,9 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
 
-    def getStatistics(query: String): NodeStatistics = {
-      println("fetching stats: " + query)
+  def getPulledDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
+
+  def getStatistics(query: String): AggregateReader.NodeStatistics = {
       m_searcher synchronized {
         try {
           val r = m_searcher

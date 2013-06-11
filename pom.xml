@@ -45,7 +45,13 @@
       <version>2.5.0</version>
     </dependency>
 
-      <!--robust xml parser-->
+    <dependency>
+        <groupId>ilps</groupId>
+        <artifactId>trec-kba</artifactId>
+        <version>1.0</version>
+    </dependency>
+
+    <!--robust xml parser-->
         <dependency>
             <groupId>org.ccil.cowan.tagsoup</groupId>
             <artifactId>tagsoup</artifactId>

@@ -1,0 +1,54 @@
+
+create a json file "kba-index.json" with this content:
+---------------------------------
+{
+    "filetype" : "xz" ,
+    "parser" : {
+      "externalParsers" : [
+      {
+        "filetype" : "xz",
+        "class" : " org.lemurproject.galago.contrib.parse.TrecKBAParser"
+      }
+     ]
+    },
+    "tokenizer" : {
+        "formats" : {"kbadate" : "long", "kbastreamticks" : "long", "kbastreamtimestamp" : "string"},
+        "fields" : ["title", "kbadate", "kbastreamticks", "kbastreamtimestamp", "kbatype"]
+    },
+    "fieldIndexParameters" : { "stemmedPostings" : false },
+    "stemmedPostings" : false
+}
+----------------------------------
+
+Call
+    core/target/appassembler/bin/galago build --indexPath=$indexdir --inputPath+$inputdir kba-index.json
+
+
+/mnt/nfs/collections/TREC/kba-2012/kba-stream-corpus-2012/2011-10-09-*
+
+{
+"inputPath" : ["/home/dietz/collections/2011-10-09-00",
+                "/home/dietz/collections/2011-10-09-01",
+                "/home/dietz/collections/2011-10-09-02",
+ ]
+    "indexPath" : "/home/dietz/treckba/index/treckba-short",
+    "filetype" : "xz" ,
+    "parser" : {
+      "externalParsers" : [
+      {
+        "filetype" : "xz",
+        "class" : " org.lemurproject.galago.contrib.parse.TrecKBAParser"
+      }
+     ]
+    },
+    "tokenizer" : {
+        "formats" : {"kbadate" : "long", "kbastreamticks" : "long", "kbastreamtimestamp" : "string"},
+        "fields" : ["title", "kbadate", "kbastreamticks", "kbastreamtimestamp", "kbatype"]
+    },
+    "fieldIndexParameters" : { "stemmedPostings" : false },
+    "stemmedPostings" : false,
+
+    "mode" : "drmaa",
+    "stemmedPostings" : false,
+    "galagoJobDir" : "/home/dietz/treckba/galago-kba-tmp/"
+}

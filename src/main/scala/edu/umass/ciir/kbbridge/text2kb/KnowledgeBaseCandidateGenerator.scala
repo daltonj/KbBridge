@@ -1,8 +1,9 @@
 package edu.umass.ciir.kbbridge.text2kb
 
-import edu.umass.ciir.kbbridge.search.{GalagoRetrieval, EntityRetrievalWeighting, EntityReprRetrieval, RetrievalMap}
-import edu.umass.ciir.kbbridge.data.{ScoredWikipediaEntity, EntityMention}
+import edu.umass.ciir.kbbridge.search.{GalagoRetrieval, EntityRetrievalWeighting, EntityReprRetrieval, DocumentBridgeMap}
+import edu.umass.ciir.kbbridge.data.{DocumentProvider, ScoredWikipediaEntity, EntityMention}
 import org.lemurproject.galago.core.retrieval.ScoredDocument
+import edu.umass.ciir.kbbridge.util.ConfInfo
 
 /**
  * User: jdalton
@@ -12,7 +13,12 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 object KnowledgeBaseCandidateGenerator {
 
   def apply() : KnowledgeBaseCandidateGenerator = {
-    new KnowledgeBaseCandidateGenerator(RetrievalMap.getSearcher, EntityRetrievalWeighting(0.5, 0.5, 0.0, 0.0), QVTextEntityRepr)
+    val galago = new GalagoRetrieval(
+      jsonConfigFile= ConfInfo.galagoJsonParameterFile,
+      galagoUseLocalIndex = true
+    )
+
+    new KnowledgeBaseCandidateGenerator(galago, EntityRetrievalWeighting(0.5, 0.5, 0.0, 0.0), QVTextEntityRepr)
   }
 
 }

@@ -5,11 +5,11 @@ import scala.collection.JavaConversions._
 import org.lemurproject.galago.core.parse.Document
 import scala.collection.mutable.ListBuffer
 import edu.umass.ciir.models._
-import edu.umass.ciir.kbbridge.search.{RetrievalMap}
+import edu.umass.ciir.kbbridge.search.{DocumentBridgeMap}
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import util.{SetMeasures, StringSimilarity}
 import com.aliasi.spell.{EditDistance, JaroWinklerDistance}
-import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, WikipediaEntity, EntityMention}
+import edu.umass.ciir.kbbridge.data.{DocumentProvider, SimpleEntityMention, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.util.ConfInfo
 import edu.umass.ciir.kbbridge.text2kb.GalagoDoc2WikipediaEntity
 
@@ -66,7 +66,7 @@ trait QueryOnlyFeatureGenerator extends FeatureGenerator {
   val linkProb = "linkProb"
   val externalLinkProb = "externalLinkProb"
 
-  val searcher = RetrievalMap.getSearcher
+  val searcher = DocumentBridgeMap.getDefaultProvider
 
 
   def exactFieldMatchMap(mentionName: String, galagoEnitityDoc: Document) = {
@@ -400,7 +400,7 @@ object QueryOnlyTest {
 
     val entity = GalagoDoc2WikipediaEntity.idToEntity("American_Civil_Liberties_Union")
 
-    val searcher = RetrievalMap.getSearcher
+    val searcher = DocumentBridgeMap.getDefaultProvider
     val document = searcher.getDocument(entity.wikipediaTitle)
     entity.document = document
 

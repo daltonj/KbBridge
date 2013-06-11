@@ -7,8 +7,6 @@ object LanguageModelFeatures {
 
   val defaultSmoothingValue = 2000
 
- // val searcher = KnowledgeBaseSearcher.getSearcher("fullwiki",ConfInfo.galagoFullWikiJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoSrv,ConfInfo.galagoFullWikiPort, ConfInfo.candidateQueryType, ConfInfo.kbSearcherResultLogFile)
-
   def computeIdf(df:Long):Double = {
     val documentCount = 3811076 //searcher.numDocumentsInCollection
     //println("LMFEATURE:" + documentCount)

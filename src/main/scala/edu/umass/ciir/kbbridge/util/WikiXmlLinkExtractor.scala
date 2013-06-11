@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.immutable.HashMap
 import org.lemurproject.galago.core.parse.Document
 import edu.umass.ciir.kbbridge.data.ScoredWikipediaEntity
-import edu.umass.ciir.kbbridge.search.RetrievalMap
+import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
 
 /**
  * Takes the input from the XML data and extractions the links from it.
@@ -80,7 +80,7 @@ object WikiLinkExtractor {
 
   def main(args: Array[String]) {
 
-    val searcher = RetrievalMap.getSearcher
+    val searcher = DocumentBridgeMap.getDefaultProvider
     val metadata = new HashMap[String, String];
     val testEntity = new ScoredWikipediaEntity("Amherst_College",
       5407,
