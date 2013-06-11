@@ -100,7 +100,8 @@ object NlpExtractor {
     val fResult = new File(ConfInfo.nlpExtractPathStanford+source+"/"+docidSafe+".xml")
 
     if(!fResult.exists()){
-        if(ConfInfo.createNlpInput){
+      val createNlpFile = false   // ConfInfo.createNlpInput
+        if(createNlpFile){
           //System.err.println("Can't find NLP ressource at "+fResult.getAbsolutePath)
           // cant find result
           val fRaw = new File(ConfInfo.nlpExtractOutputPathStanford+source+"/"+docidSafe)

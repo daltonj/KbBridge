@@ -6,10 +6,10 @@ import org.lemurproject.galago.core.parse.Document
 import scala.collection.mutable.HashMap
 import util.{SetMeasures, LanguageModelFeatures}
 import edu.umass.ciir.kbbridge.search.{RetrievalMap}
-import edu.umass.ciir.kbbridge.nlp.{NlpQueryContextBuilder, TextNormalizer}
-import edu.umass.ciir.kbbridge.util.{ConfInfo, WikiLinkExtractor}
+import edu.umass.ciir.kbbridge.nlp.{TextNormalizer}
+import edu.umass.ciir.kbbridge.util.{WikiLinkExtractor}
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
-import edu.umass.ciir.kbbridge.text2kb.{GalagoDoc2WikipediaEntity, KnowledgeBaseCandidateGenerator}
+import edu.umass.ciir.kbbridge.text2kb.{GalagoDoc2WikipediaEntity}
 
 trait LocalDocumentFeatures extends FeatureGenerator {
 
@@ -132,10 +132,7 @@ trait LocalDocumentFeatures extends FeatureGenerator {
     val entityFullTextAllFields = entity.document.terms.mkString(" ")
     contextSimFeatures(mention.fullText, entityFullTextAllFields, "docText")
 
-    val nerContextBuilder = new NlpQueryContextBuilder
-    val nerContext = nerContextBuilder.buildContext(mention)
-    val documentNers = nerContext.allNersSorted
-
+    val documentNers = mention.nerNeighbors.map(ner => ner.text)
     val nerContextFeatures = nerContextSimilarity(documentNers, entity.document)
     mapToFeature(nerContextFeatures.toMap)
 
