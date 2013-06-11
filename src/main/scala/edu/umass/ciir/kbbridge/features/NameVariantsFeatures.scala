@@ -89,8 +89,7 @@ object NameVariantsTest {
     val mention = new SimpleEntityMention(docId = "eng-NG-31-100906-10932919", entityType = "ORG", mentionId = "EL_00637", entityName = "fda", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with NameVariantsFeatures {}
 
-    val searcher = DocumentBridgeMap.getDefaultProvider
-    val document = searcher.getDocument(entity.wikipediaTitle)
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
     entity.document = document
 
     queryOnlyFeatures.documentContextNameVariantFeatures(mention, entity)

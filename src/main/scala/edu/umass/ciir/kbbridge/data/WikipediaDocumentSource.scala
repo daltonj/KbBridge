@@ -11,8 +11,7 @@ import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
 object WikipediaDocumentSource extends DocumentTextSource {
 
   override def fullText (docId:String) {
-    val searcher = DocumentBridgeMap.getDefaultProvider
-    val document = searcher.getDocument(docId)
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument(docId)
     val text = TextNormalizer.normalizeText(WikiXmlTextExtractor.extractText(document))
     text
   }

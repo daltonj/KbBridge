@@ -165,8 +165,7 @@ object LocalDocumentFeaturesTest {
     val mention = new SimpleEntityMention(docId = "eng-WL-11-174611-12978627", entityType = "ORG", mentionId = "EL_00637", entityName = "Alabama", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with LocalDocumentFeatures {}
 
-    val searcher = DocumentBridgeMap.getDefaultProvider
-    val document = searcher.getDocument(entity.wikipediaTitle)
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
     entity.document = document
 
     queryOnlyFeatures.generateDocumentContextFeatures(mention, entity, Seq())

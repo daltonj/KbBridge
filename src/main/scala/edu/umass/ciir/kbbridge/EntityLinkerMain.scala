@@ -13,7 +13,7 @@ object EntityLinkerMain {
 
   val reprGenerator = QVSMLocalTextEntityRepr
   val galago = new GalagoRetrieval(
-    jsonConfigFile= ConfInfo.galagoJsonParameterFile,
+    jsonConfigFile= ConfInfo.galagoKbJsonParameterFile,
     galagoUseLocalIndex = true
   )
   val candidateGenerator = new EntityReprRetrieval(galago, EntityRetrievalWeighting(0.5, 0.25, 0.05, 0.2))

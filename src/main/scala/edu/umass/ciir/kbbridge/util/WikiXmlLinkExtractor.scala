@@ -80,13 +80,12 @@ object WikiLinkExtractor {
 
   def main(args: Array[String]) {
 
-    val searcher = DocumentBridgeMap.getDefaultProvider
     val metadata = new HashMap[String, String];
     val testEntity = new ScoredWikipediaEntity("Amherst_College",
       5407,
       0.0d,
       1)
-    val document = searcher.getDocument("Amherst_College")
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument("Amherst_College")
     val links = extractLinks(document)
     for (a <- links) {
       println(a)

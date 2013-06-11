@@ -41,7 +41,7 @@ class RankLibReranker(rankerModelFile: String) {
     val candsWithRank = candidates.zipWithIndex
     for ((entity, rank) <- candsWithRank) {
       // now for the features
-      val galagoDoc = DocumentBridgeMap.getDefaultProvider.getDocument(entity.wikipediaTitle)
+      val galagoDoc = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
       entity.document = galagoDoc
 
       val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, entities)

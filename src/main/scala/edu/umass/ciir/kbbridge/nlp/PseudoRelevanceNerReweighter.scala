@@ -260,7 +260,7 @@ class PseudoRelevanceNerReweighter {
 
 
   def pseudoKbSearcher: GalagoRetrieval = {
-    new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoPseudoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoSrv, galagoPort = ConfInfo.galagoPseudoPort)
+    new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoPseudoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv, galagoPort = ConfInfo.galagoPseudoPort)
   }
 
   def getNormSentences(query: EntityMention): Seq[String] = {

@@ -14,7 +14,7 @@ object KnowledgeBaseCandidateGenerator {
 
   def apply() : KnowledgeBaseCandidateGenerator = {
     val galago = new GalagoRetrieval(
-      jsonConfigFile= ConfInfo.galagoJsonParameterFile,
+      jsonConfigFile= ConfInfo.galagoKbJsonParameterFile,
       galagoUseLocalIndex = true
     )
 

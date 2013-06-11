@@ -34,21 +34,21 @@ object SimpleFeatureExtractor {
     val docId = mention.docId
     val mentionId = mention.mentionId
 
-    val dir = new File(ConfInfo.serialComentionPath)
+    val dir = new File(ConfInfo.serializedFeaturePath)
     if (!dir.exists()) {
       dir.mkdirs()
     }
 
-    val svmFileName = ConfInfo.serialComentionPath + File.separator + docId + "_" + mentionId + "_m2eOnly.svm"
+    val svmFileName = ConfInfo.serializedFeaturePath + File.separator + docId + "_" + mentionId + "_m2eOnly.svm"
     val pw = new PrintWriter(svmFileName)
 
-    val filename = ConfInfo.serialComentionPath + File.separator + docId + "_" + mentionId + "_m2eOnly.pbdat"
+    val filename = ConfInfo.serializedFeaturePath + File.separator + docId + "_" + mentionId + "_m2eOnly.pbdat"
     val file = new File(filename)
     println("Writing feature file: " + file.getAbsolutePath)
     if (!file.exists() || overwrite) {
       println("Fetching candidates for mention: " + mention.mentionId + " " + mention.docId + " " + mention.entityName)
 
-      val candidates = KnowledgeBaseCandidateGenerator().retrieveCandidates(mention, ConfInfo.maxCandidates)
+      val candidates = KnowledgeBaseCandidateGenerator().retrieveCandidates(mention, ConfInfo.maxEntityCandidates)
 
       val candsWithRank = candidates.zipWithIndex
 

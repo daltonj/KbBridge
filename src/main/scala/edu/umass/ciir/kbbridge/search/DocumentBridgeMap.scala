@@ -14,23 +14,29 @@ object DocumentBridgeMap extends DocumentProvider {
   // todo add collection flag to the lookup, e.g. (identifier, wiki)
 
   def getDocument(identifier: String, params: Option[Parameters]) = {
-    getDefaultProvider.getDocument(identifier, params)
+    getDefaultDocumentProvider.getDocument(identifier, params)
   }
 
   def getPulledDocument(identifier: String, params: Option[Parameters]) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
 
-  def getFieldTermCount(cleanTerm: String, field: String) = getDefaultProvider.getFieldTermCount(cleanTerm, field)
+  def getFieldTermCount(cleanTerm: String, field: String) = getDefaultDocumentProvider.getFieldTermCount(cleanTerm, field)
 
   val searcherMap: mutable.Map[String, DocumentProvider] = new mutable.HashMap[String, DocumentProvider]()
 
-  def getDefaultProvider: DocumentProvider = {
-    getProvider("default")
+  def getKbDocumentProvider:DocumentProvider = {
+    searcherMap.getOrElseUpdate("kb", {
+      new GalagoRetrieval(ConfInfo.galagoKbJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoKbSrv, ConfInfo.galagoKbPort)
+    })
   }
 
-  def getProvider(searcherName: String): DocumentProvider = {
-    searcherMap.getOrElseUpdate(searcherName, {
-      new GalagoRetrieval(ConfInfo.galagoJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoSrv, ConfInfo.galagoPort)
+  def getDefaultDocumentProvider: DocumentProvider = {
+    searcherMap.getOrElseUpdate("default", {
+      new GalagoRetrieval(ConfInfo.galagoDefaultJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoDefaultSrv, ConfInfo.galagoDefaultPort)
     })
+  }
+
+  private def getProvider(searcherName: String): Option[DocumentProvider] = {
+    searcherMap.get(searcherName)
   }
 
   def getProvider(searcherName: String, jsonConfigFile: String, galagoUseLocalIndex: Boolean, galagoSrv: String, galagoPort: String, candidateQueryType: String, resultLogFileName: String): DocumentProvider = {

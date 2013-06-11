@@ -18,7 +18,7 @@ object FileFeatureLoader {
 
     for ((query, idx) <- queries.zipWithIndex) {
 
-      val filename = ConfInfo.serialComentionPath + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
+      val filename = ConfInfo.serializedFeaturePath + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
       if (idx % 500 == 0) {
         println(idx + " loading file: " + filename)
       }
