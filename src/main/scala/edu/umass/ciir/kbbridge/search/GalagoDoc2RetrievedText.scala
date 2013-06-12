@@ -1,8 +1,9 @@
 package edu.umass.ciir.kbbridge.search
 
 import org.lemurproject.galago.core.retrieval.ScoredDocument
-import edu.umass.ciir.kbbridge.data.GalagoBridgeDocument
+import edu.umass.ciir.kbbridge.data.{ScoredBridgeDocument, GalagoBridgeDocumentWrapper, GalagoBridgeDocument}
 import edu.umass.ciir.kbbridge.util.SeqTools
+import org.lemurproject.galago.tupleflow.Parameters
 
 /**
  * User: dietz
@@ -11,9 +12,9 @@ import edu.umass.ciir.kbbridge.util.SeqTools
  */
 class GalagoDoc2RetrievedText(galago: GalagoRetrieval) {
 
-  def galagoResultToRetrievedText(seq: Seq[ScoredDocument]): Seq[GalagoBridgeDocument] = {
+  def galagoResultToRetrievedText(seq: Seq[ScoredDocument], params:Option[Parameters]=None): Seq[GalagoBridgeDocument] = {
     val name2sd = seq.map(elem => (elem.documentName, elem))
-    val name2doc = galago.getDocuments(seq.map(_.documentName))
+    val name2doc = galago.getDocuments(seq.map(_.documentName), params)
 
     val merged = SeqTools.alignMaps(name2sd, name2doc)
     for ((key, (sd, galagoDoc)) <- merged) yield {
@@ -28,12 +29,12 @@ class GalagoDoc2RetrievedText(galago: GalagoRetrieval) {
     val rank = sd.rank
 
 
-    new GalagoBridgeDocument(
+    new GalagoBridgeDocumentWrapper(
       documentname = docname
-      , score = score
-      , rank = rank
-      , galagoDocument = galagoDoc
-    )
+      , rawScore = Some(score)
+      , rank = Some(rank)
+      , galagoDocument = Some(galagoDoc)
+    ).asInstanceOf[GalagoBridgeDocument]
 
   }
 }

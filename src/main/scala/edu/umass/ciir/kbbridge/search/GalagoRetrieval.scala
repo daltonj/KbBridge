@@ -53,9 +53,10 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
       rmR.runExpansion(rawQuery,queryParams)
     }
 
-    def getDocuments(identifier:Seq[String]):Map[String, Document] = {
+    def getDocuments(identifier:Seq[String],  params:Option[Parameters] = None):Map[String, Document] = {
       val p = new Parameters()
       p.copyFrom(globalParameters)
+      params match {case Some(param) => p.copyFrom(param); case _ => {}}
       p.set("terms", true)
       p.set("tags", true)
       try {
@@ -75,8 +76,8 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
 
   def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
     val p = new Parameters()
-    params match {case Some(param) => p.copyFrom(param); case _ => {}}
     p.copyFrom(globalParameters)
+    params match {case Some(param) => p.copyFrom(param); case _ => {}}
     p.set("terms", true)
     p.set("tags", true)
     try {
@@ -94,7 +95,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
 
-  def getPulledDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
+  def getBridgeDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
 
   def getStatistics(query: String): AggregateReader.NodeStatistics = {
       m_searcher synchronized {
