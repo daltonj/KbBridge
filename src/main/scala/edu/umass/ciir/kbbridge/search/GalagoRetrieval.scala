@@ -44,35 +44,35 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   val m_searcher = RetrievalFactory.instance(globalParameters)
 
 
+
   def rmExpansion(rawQuery: String, queryParams: Parameters): Seq[WeightedTerm] = {
     val rmR = new RelevanceModelExpander(m_searcher, queryParams)
     rmR.runExpansion(rawQuery, queryParams)
   }
 
-  def getDocuments(identifier: Seq[String]): Map[String, Document] = {
-    val p = new Parameters()
-    p.copyFrom(globalParameters)
-    p.set("terms", true)
-    p.set("tags", true)
-    try {
-      m_searcher synchronized {
-        val docmap = m_searcher.getDocuments(identifier, p)
-        docmap.toMap
+    def getDocuments(identifier:Seq[String],  params:Option[Parameters] = None):Map[String, Document] = {
+      val p = new Parameters()
+      p.copyFrom(globalParameters)
+      params match {case Some(param) => p.copyFrom(param); case _ => {}}
+      p.set("terms", true)
+      p.set("tags", true)
+      try {
+        m_searcher synchronized {
+          val docmap = m_searcher.getDocuments(identifier, p)
+          docmap.toMap
+        }
+      } catch {
+        case ex: NullPointerException => {
+          println("NPE while fetching documents " + identifier)
+          throw ex
+        }
       }
-    } catch {
-      case ex: NullPointerException => {
-        println("NPE while fetching documents " + identifier)
-        throw ex
-      }
-
-      case ex => throw ex
     }
-  }
 
   def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
     val p = new Parameters()
-    params match {case Some(param) => p.copyFrom(param); case _ => {}}
     p.copyFrom(globalParameters)
+    params match {case Some(param) => p.copyFrom(param); case _ => {}}
     p.set("terms", true)
     p.set("tags", true)
     try {
@@ -90,6 +90,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
 
+
   def getStatistics(query: String): NodeStatistics = {
     println("fetching stats: " + query)
     m_searcher synchronized {
@@ -103,13 +104,12 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
         case e: Exception => {
           println("Error getting statistics for query: " + query)
           throw e
-
         }
       }
     }
   }
 
-  def getPulledDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
+  def getBridgeDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
 
   def getFieldTermCount(cleanTerm: String, field: String): Long = {
     if (cleanTerm.length > 0) {

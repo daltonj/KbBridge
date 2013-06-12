@@ -28,7 +28,13 @@ object TextEntityReprGeneratorsUtil {
 
 
   def createWordContext(query:EntityMention):Seq[(String, Double)] = {
-    val normtext = TextNormalizer.normalizeText(query.fullText)
+    val text = query.fullText
+    createWeightedWords(text)
+  }
+
+
+  def createWeightedWords(text: String): Seq[(String, Double)] = {
+    val normtext = TextNormalizer.normalizeText(text)
     val normTokens = normtext.split("\\s+")
     val unigramModel = new LanguageModel(1)
     unigramModel.addDocument(normTokens, true)
@@ -37,7 +43,6 @@ object TextEntityReprGeneratorsUtil {
     val unigramWeights = unigramModel.getKTopFrequencies(20, true, 1)
     unigramWeights.toSeq.map(uw => uw.getTerm -> uw.getProbability)
   }
-
 
   def convertNeighborNameToEntityRepr(neighborname:Seq[(String,Double)]):Seq[(EntityRepr, Double)] = {
     for((name, weight) <- neighborname) yield {
