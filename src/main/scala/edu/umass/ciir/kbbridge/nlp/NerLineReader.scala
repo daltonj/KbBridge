@@ -132,7 +132,7 @@ object NerLineReader {
 //    
 //     TrecKbaProperties.loadProperties("./config/trec-kba.properties")
 //
-//     val kbaSearcher = KnowledgeBaseSearcher.getSearcher("kba", TrecKbaProperties.galagoJsonParameterFile, TrecKbaProperties.useLocalIndex, TrecKbaProperties.galagoSrv, TrecKbaProperties.galagoKbaPort, "kba", "kba")
+//     val kbaSearcher = KnowledgeBaseSearcher.getSearcher("kba", TrecKbaProperties.galagoKbJsonParameterFile, TrecKbaProperties.useLocalIndex, TrecKbaProperties.galagoKbSrv, TrecKbaProperties.galagoKbaPort, "kba", "kba")
 //  
 //     val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
 //

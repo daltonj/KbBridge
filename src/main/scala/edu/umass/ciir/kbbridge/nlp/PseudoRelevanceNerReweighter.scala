@@ -7,7 +7,7 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 import edu.umass.ciir.models._
 import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention}
 import edu.umass.ciir.kbbridge.util.ConfInfo
-import edu.umass.ciir.kbbridge.search.{RetrievalMap, GalagoRetrieval}
+import edu.umass.ciir.kbbridge.search.{DocumentBridgeMap, GalagoRetrieval}
 
 
 /**
@@ -260,7 +260,7 @@ class PseudoRelevanceNerReweighter {
 
 
   def pseudoKbSearcher: GalagoRetrieval = {
-    RetrievalMap.getSearcher("pseudorel", ConfInfo.galagoPseudoJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoSrv, ConfInfo.galagoPseudoPort, ConfInfo.pseudoQueryType, "pseudorelevance")
+    new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoPseudoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv, galagoPort = ConfInfo.galagoPseudoPort)
   }
 
   def getNormSentences(query: EntityMention): Seq[String] = {

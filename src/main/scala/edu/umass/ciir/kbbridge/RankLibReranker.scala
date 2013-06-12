@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 
 import ciir.umass.edu.learning.{RankerFactory, DataPoint}
 import collection.mutable
-import search.RetrievalMap
+import search.DocumentBridgeMap
 import serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
 import util.ConfInfo
 import scala.collection.JavaConversions._
@@ -41,7 +41,7 @@ class RankLibReranker(rankerModelFile: String) {
     val candsWithRank = candidates.zipWithIndex
     for ((entity, rank) <- candsWithRank) {
       // now for the features
-      val galagoDoc = RetrievalMap.getSearcher.getDocument(entity.wikipediaTitle)
+      val galagoDoc = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
       entity.document = galagoDoc
 
       val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, entities)

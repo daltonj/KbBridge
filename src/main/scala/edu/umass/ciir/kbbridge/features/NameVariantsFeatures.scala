@@ -2,10 +2,10 @@ package edu.umass.ciir.kbbridge.features
 
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
-import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, WikipediaEntity, EntityMention}
+import edu.umass.ciir.kbbridge.data.{DocumentProvider, SimpleEntityMention, WikipediaEntity, EntityMention}
 import edu.umass.ciir.kbbridge.nlp.{TextNormalizer, NaiveQueryContextBuilder}
 import edu.umass.ciir.kbbridge.util.ConfInfo
-import edu.umass.ciir.kbbridge.search.{RetrievalMap}
+import edu.umass.ciir.kbbridge.search.{DocumentBridgeMap}
 import edu.umass.ciir.kbbridge.text2kb.GalagoDoc2WikipediaEntity
 
 trait NameVariantsFeatures extends QueryOnlyFeatureGenerator {
@@ -89,8 +89,7 @@ object NameVariantsTest {
     val mention = new SimpleEntityMention(docId = "eng-NG-31-100906-10932919", entityType = "ORG", mentionId = "EL_00637", entityName = "fda", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with NameVariantsFeatures {}
 
-    val searcher = RetrievalMap.getSearcher
-    val document = searcher.getDocument(entity.wikipediaTitle)
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
     entity.document = document
 
     queryOnlyFeatures.documentContextNameVariantFeatures(mention, entity)

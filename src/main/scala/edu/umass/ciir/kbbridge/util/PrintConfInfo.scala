@@ -7,10 +7,10 @@ package edu.umass.ciir.kbbridge.util
 object PrintConfInfo {
   def printTacConfig() {
     if (ConfInfo.galagoUseLocalIndex) {
-      println("galagoParameterFile "+ ConfInfo.galagoJsonParameterFile)
+      println("galagoParameterFile "+ ConfInfo.galagoKbJsonParameterFile)
     }
     println("candidateQueryType "+ConfInfo.candidateQueryType)
-    println("maxCandidates "+ConfInfo.maxCandidates)
+    println("maxEntityCandidates "+ConfInfo.maxEntityCandidates)
     println("useOracleCandidateGeneration "+ConfInfo.useOracleCandidateGeneration)
     println("rankingFeatures "+ConfInfo.rankingFeatures.mkString(","))
     println("nilClassifyFeatures "+ConfInfo.nilClassifyFeatures.mkString(","))

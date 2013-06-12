@@ -5,10 +5,10 @@ import edu.umass.ciir.models._
 import org.lemurproject.galago.core.parse.Document
 import scala.collection.mutable.HashMap
 import util.{SetMeasures, LanguageModelFeatures}
-import edu.umass.ciir.kbbridge.search.{RetrievalMap}
+import edu.umass.ciir.kbbridge.search.{DocumentBridgeMap}
 import edu.umass.ciir.kbbridge.nlp.{TextNormalizer}
 import edu.umass.ciir.kbbridge.util.{WikiLinkExtractor}
-import edu.umass.ciir.kbbridge.data.{SimpleEntityMention, EntityMention, WikipediaEntity}
+import edu.umass.ciir.kbbridge.data.{DocumentProvider, SimpleEntityMention, EntityMention, WikipediaEntity}
 import edu.umass.ciir.kbbridge.text2kb.{GalagoDoc2WikipediaEntity}
 
 trait LocalDocumentFeatures extends FeatureGenerator {
@@ -25,7 +25,7 @@ trait LocalDocumentFeatures extends FeatureGenerator {
   val nerDice = "nerDice"
   val nerJaccard = "nerJaccard"
 
-  val searcher = RetrievalMap.getSearcher
+  val searcher = DocumentProvider
 
   def contextSimFeatures(mContext: String, eContext: String, contextType: String) {
     val textSimFeatures = LanguageModelFeatures.computeLmSimilarity(mContext, eContext, true);
@@ -165,8 +165,7 @@ object LocalDocumentFeaturesTest {
     val mention = new SimpleEntityMention(docId = "eng-WL-11-174611-12978627", entityType = "ORG", mentionId = "EL_00637", entityName = "Alabama", fullText = "")
     val queryOnlyFeatures = new FeatureSetup(addFeatureCall, addFeatureValueCall) with LocalDocumentFeatures {}
 
-    val searcher = RetrievalMap.getSearcher
-    val document = searcher.getDocument(entity.wikipediaTitle)
+    val document = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
     entity.document = document
 
     queryOnlyFeatures.generateDocumentContextFeatures(mention, entity, Seq())

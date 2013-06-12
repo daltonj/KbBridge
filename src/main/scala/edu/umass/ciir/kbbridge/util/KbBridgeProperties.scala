@@ -14,9 +14,9 @@ object KbBridgeProperties {
   val defaultPropertiesFile = "./config/kbbridge.properties"
   loadProperties(defaultPropertiesFile)
 
-  def galagoJsonParameterFile = conf.getProperty("KbBridge.galagoJsonParameterFile")
+  def galagoJsonParameterFile = conf.getProperty("KbBridge.galagoKbJsonParameterFile")
   def useLocalIndex = conf.getProperty("KbBridge.useLocalIndex").toBoolean
-  def galagoSrv = conf.getProperty("KbBridge.galagoSrv")
+  def galagoSrv = conf.getProperty("KbBridge.galagoKbSrv")
   def galagoKbaPort = conf.getProperty("KbBridge.galagoKbaPort")
   def numberOfRequestedResults = conf.getProperty("KbBridge.numberOfRequestedResults").toInt
   def numberFirstPassExpansionRMTerms = conf.getProperty("KbBridge.numberFirstPassExpansionRMTerms").toInt

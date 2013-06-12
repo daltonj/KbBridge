@@ -29,22 +29,21 @@ public class ConfInfo {
 
     public static final String sourceDir = conf.getProperty("sourceDir");
 
-    public static final String galagoSrv = conf.getProperty("galagoSrv");
-    public static final String galagoPort = conf.getProperty("galagoPort");
-    public static final int maxCandidates = Integer.parseInt(conf.getProperty("candidates.maxCandidates", "10"));
+    public static final String galagoKbSrv = conf.getProperty("galagoKbSrv");
+    public static final String galagoKbPort = conf.getProperty("galagoKbPort");
+    public static final String galagoKbJsonParameterFile = conf.getProperty("galagoKbJsonParameterFile","./config/galago-fullwiki");
+    public static final int maxEntityCandidates = Integer.parseInt(conf.getProperty("candidates.maxEntityCandidates", "10"));
+
+    public static final String galagoDefaultSrv = conf.getProperty("galagoDefaultSrv");
+    public static final String galagoDefaultPort = conf.getProperty("galagoDefaultPort");
+    public static final String galagoDefaultJsonParameterFile = conf.getProperty("galagoDefaultJsonParameterFile", "./config/galago-fullwiki");
 
     public static final String candidateQueryType =conf.getProperty("candidates.queryType","default");
 
     public static final int numTrainQueries =  Integer.parseInt(conf.getProperty("pipeline.numTrainQueries", "-1"));
     public static final int numTestQueries =  Integer.parseInt(conf.getProperty("pipeline.numTestQueries", "-1"));
     public static final boolean galagoUseLocalIndex = Boolean.parseBoolean(conf.getProperty("galagoUseLocalIndex", "false"));
-    public static final boolean candsFromRunFile = Boolean.parseBoolean(conf.getProperty("useCachedCandidatesFromRunFile", "false"));
-    public static final String candidateFileKey = conf.getProperty("candidateFileKey", "default"+"_" + ConfInfo.candidateQueryType + "_" + ConfInfo.maxCandidates + "_" + ConfInfo.numTrainQueries + "_" + ConfInfo.numTestQueries);
-    public static final String galagoRunDir = conf.getProperty("galagoRunDir", "candidates");
-    public static final String kbSearcherResultLogFile = conf.getProperty("kbSearcherResultLogFile", "default");
-    public static final boolean fetchGalagoParsedDocument = Boolean.parseBoolean(conf.getProperty("fetchGalagoParsedTerms", "true"));
-    
-    public static final String galagoJsonParameterFile = conf.getProperty("galagoJsonParameterFile","./config/galago-fullwiki");
+
     public static final boolean useOracleCandidateGeneration = Boolean.parseBoolean(conf.getProperty("useOracleCandidateGeneration", "false"));
 
 
@@ -58,22 +57,18 @@ public class ConfInfo {
 
 
 
-    public static final String nlpExtractPathStanford = createDir(conf.getProperty("nlpextract.pathstanford","./extract-new/"));
-    public static final String nlpExtractOutputPathStanford = createDir(conf.getProperty("nlpextract.outputpathstanford",nlpExtractPathStanford));
-    public static final String nlpExtractListStanford = conf.getProperty("nlpextract.liststanford","extractListStanford");
-    public static final String nlpExtractScriptStanford = conf.getProperty("nlpextract.scriptstanford","extractNer.sh");
-    public static final String nlpExtractExecStanford = conf.getProperty("nlpextract.execstanford","./lib/stanford-corenlp-2012-04-09");
+    public static final String nlpExtractPathStanford = createDir(conf.getProperty("nlpextract.pathstanford", "./extract-new/"));
 
-    
+
     public static final String galagoTermCounts = conf.getProperty("galago.termcounts","termcounts.txt");
     public static final boolean pipelineCrossVal = Boolean.parseBoolean(conf.getProperty("pipeline.crossval", ""+false));
 
 
     // pseudo relevance tac source index
     public static final boolean useNerContextInQuery = Boolean.parseBoolean(conf.getProperty("usenerinquery", "false"));
-    public static final String galagoPseudoJsonParameterFile = conf.getProperty("pseudo.galagoJsonParameterFile","./config/galago-tacsource");
-    public static final String galagoPseudoPort = conf.getProperty("pseudo.galagoPort");
-    public static final int maxCandidatesPseudo =  Integer.parseInt(conf.getProperty("pseudo.candidates.maxCandidates", "10"));
+    public static final String galagoPseudoJsonParameterFile = conf.getProperty("pseudo.galagoKbJsonParameterFile","./config/galago-tacsource");
+    public static final String galagoPseudoPort = conf.getProperty("pseudo.galagoKbPort");
+    public static final int maxCandidatesPseudo =  Integer.parseInt(conf.getProperty("pseudo.candidates.maxEntityCandidates", "10"));
     public static final String pseudoQueryType =  conf.getProperty("pseudo.querytype", "seqdep");
     public static final String nerNeighborQuerySelectMethod =  conf.getProperty("nerneighborqueryselectmethod", "trivial");
     public static final String nerNeighborQueryMethod =  conf.getProperty("nerneighborquerymethod", "trivial");
@@ -81,10 +76,9 @@ public class ConfInfo {
     public static final boolean useSentencesInCandidateQuery = Boolean.parseBoolean(conf.getProperty("use_sentences_in_candidate_query", "true"));
 
 
-    public static final String serialComentionPath=conf.getProperty("serialcomention.path","scm");
+    public static final String serializedFeaturePath =conf.getProperty("serializedFeaturePath","scm");
     public static boolean noFirstPassQuery = Boolean.parseBoolean(conf.getProperty("no_first_pass_query", "true"));
 
-    public static boolean createNlpInput = Boolean.parseBoolean(conf.getProperty("createNlpInput", "false"));
     public static boolean useTacIdMap = Boolean.parseBoolean(conf.getProperty("useTacIdMap", "false"));
 
     static String createDir(String extractDirName)  {

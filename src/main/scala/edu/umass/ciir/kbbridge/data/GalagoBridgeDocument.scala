@@ -6,7 +6,7 @@ import scala.collection.JavaConversions._
  * Date: 6/7/13
  * Time: 5:23 PM
  */
-class GalagoDocument(val documentname:String, val score:Double, val rank:Int, val galagoDocument: org.lemurproject.galago.core.parse.Document) {
+class GalagoBridgeDocument(val documentname:String, val score:Double, val rank:Int, val galagoDocument: org.lemurproject.galago.core.parse.Document) extends BridgeDocument{
   def metadata: Map[String, String] = {
     val m = galagoDocument.metadata
     if (m == null) Map.empty
@@ -23,6 +23,5 @@ class GalagoDocument(val documentname:String, val score:Double, val rank:Int, va
     if (t == null) Seq.empty[String]
     else t
   }
-
-
 }
+
