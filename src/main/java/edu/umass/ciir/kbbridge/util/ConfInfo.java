@@ -38,20 +38,15 @@ public class ConfInfo {
     public static final String galagoDefaultPort = conf.getProperty("galagoDefaultPort");
     public static final String galagoDefaultJsonParameterFile = conf.getProperty("galagoDefaultJsonParameterFile", "./config/galago-fullwiki");
 
-    public static final String candidateQueryType =conf.getProperty("candidates.queryType","default");
 
-    public static final int numTrainQueries =  Integer.parseInt(conf.getProperty("pipeline.numTrainQueries", "-1"));
-    public static final int numTestQueries =  Integer.parseInt(conf.getProperty("pipeline.numTestQueries", "-1"));
     public static final boolean galagoUseLocalIndex = Boolean.parseBoolean(conf.getProperty("galagoUseLocalIndex", "false"));
 
     public static final boolean useOracleCandidateGeneration = Boolean.parseBoolean(conf.getProperty("useOracleCandidateGeneration", "false"));
 
 
     public static final String[] rankingFeatures = conf.getProperty("features.ranking","nus,llcsurf").split(",");
-    public static final String[] nilClassifyFeatures = conf.getProperty("features.nil","nus,llcsurf").split(",");
 
 
-    public static final String detailedEvalOutput = conf.getProperty("eval.detailedOutput","eval.txt");
 
     public static final String idmap = conf.getProperty("idmapping","/iesl/canvas/jdalton/tac/data/tac-wiki-mapping");
 
@@ -61,7 +56,6 @@ public class ConfInfo {
 
 
     public static final String galagoTermCounts = conf.getProperty("galago.termcounts","termcounts.txt");
-    public static final boolean pipelineCrossVal = Boolean.parseBoolean(conf.getProperty("pipeline.crossval", ""+false));
 
 
     // pseudo relevance tac source index
