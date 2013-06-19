@@ -12,10 +12,12 @@ trait DocumentProvider {
   def getDocument(identifier:String, params:Option[Parameters] = None):Document
   def getBridgeDocument(identifier:String, params:Option[Parameters] = None):BridgeDocument
   def getFieldTermCount(cleanTerm:String, field: String): Long
+
+  class BridgeDocumentNotFoundException(val documentname:String) extends RuntimeException("Can't provide document with name "+documentname)
 }
 
 object DocumentProvider {
-  def convertToPulledDocument(identifier: String, galagoDocument:Document,  params:Option[Parameters] = None):BridgeDocument = {
+  def convertToBridgeDocument(identifier: String, galagoDocument:Document,  params:Option[Parameters] = None):BridgeDocument = {
     new GalagoBridgeDocumentWrapper(identifier, galagoDocument = Some(galagoDocument:Document))
   }
 

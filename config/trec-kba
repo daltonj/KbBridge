@@ -1,0 +1,13 @@
+{
+    "index" : "/home/dietz/kbbridge/code/KbBridge/index/treckba-short/",
+    "fieldIndexParameters" : { "stemmedPostings" : false },
+    "stemmedPostings" : false,
+    "formats" : {"kbadate" : "long", "kbastreamticks" : "long", "kbastreamtimestamp" : "string"},
+    "fields" : ["title", "kbadate", "kbastreamticks", "kbastreamtimestamp", "kbatype"],
+    "stemming" : false,
+    "defaultSmoothingMu" : 2500.0,
+    "uniw" : 0.8,
+    "odw" : 0.15,
+    "uww" : 0.05
+
+}

@@ -17,7 +17,7 @@ object DocumentBridgeMap extends DocumentProvider {
     getDefaultDocumentProvider.getDocument(identifier, params)
   }
 
-  def getBridgeDocument(identifier: String, params: Option[Parameters]) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
+  def getBridgeDocument(identifier: String, params: Option[Parameters]) = DocumentProvider.convertToBridgeDocument(identifier, getDocument(identifier, params))
 
   def getFieldTermCount(cleanTerm: String, field: String) = getDefaultDocumentProvider.getFieldTermCount(cleanTerm, field)
 

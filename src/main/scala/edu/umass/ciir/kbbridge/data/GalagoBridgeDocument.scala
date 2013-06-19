@@ -15,6 +15,8 @@ trait GalagoBridgeDocument extends ScoredBridgeDocument{
 
   /** Same thing just without the galago document (and therefore no access to text or metadata)*/
   def dropDocument:GalagoBridgeDocument
+  /** Same thing with the galago document and access to text or metadata*/
+  def ressurectDocument(docProvider:DocumentProvider):GalagoBridgeDocument
 }
 
 class GalagoBridgeDocumentWrapper(val documentname:String, val rawScore:Option[Double]=None, val relevanceScore:Option[Double]=None, val rank:Option[Int]=None, val galagoDocument: Option[org.lemurproject.galago.core.parse.Document]) extends ScoredBridgeDocument with GalagoBridgeDocument {
@@ -53,6 +55,7 @@ class GalagoBridgeDocumentWrapper(val documentname:String, val rawScore:Option[D
     if(galagoDocument.isDefined) this.asInstanceOf[GalagoBridgeDocument]
     else {
       val galagoDoc = docProvider.getDocument(documentname)
+
       new GalagoBridgeDocumentWrapper(documentname, rawScore, relevanceScore, rank, Some(galagoDoc)).asInstanceOf[GalagoBridgeDocument]
     }
   }

@@ -60,6 +60,11 @@ object SeqTools {
     }
   }
 
+  def groupByMappedKey[A,B,C,D](seq:Iterable[(A,B)], by:(A => C), aggr:(Iterable[B] => D)):Map[C,D] = {
+    seq.groupBy(entry => by(entry._1))
+      .map(entry => (entry._1, aggr(entry._2.map(_._2))))
+  }
+
   def groupByKey[A,B](seq:Iterable[(A,B)]):Map[A,Iterable[B]] = {
     seq.groupBy(_._1).map(entry => (entry._1, entry._2.map(_._2)))
   }
@@ -120,6 +125,17 @@ object SeqTools {
   }
 
 
+  def sumDoubleMaps[K](maps:Seq[Map[K,Double]]):Map[K,Double] ={
+    val flattenMaps = maps.map(_.toSeq).flatten
+    (
+      for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
+        val values = entries.map(_._2)
+        key -> values.sum
+      }
+      ).toMap
+  }
+
+
   def mergeMaps[K, V](maps:Seq[Map[K,Seq[V]]]):Map[K,Seq[V]] ={
     val flattenMaps = maps.map(_.toSeq).flatten
     (
@@ -153,6 +169,11 @@ object SeqTools {
 
   def findKey[A,B](seq:Seq[(A,B)], key:A):Option[B] = {
     seq.find(_._1 == key).map(_._2)
+  }
+
+
+  def innerProduct[K](featureVector :Seq[(K,Double)], weights:Map[K,Double]):Double = {
+    (for((feature, value) <- featureVector) yield value * weights(feature)).sum
   }
 
 }

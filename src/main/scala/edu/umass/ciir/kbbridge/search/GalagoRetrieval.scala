@@ -11,7 +11,7 @@ import scala._
 import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
 import org.lemurproject.galago.core.index.AggregateReader.NodeStatistics
 import java.util.concurrent.TimeUnit
-import edu.umass.ciir.kbbridge.data.DocumentProvider
+import edu.umass.ciir.kbbridge.data.{GalagoBridgeDocumentWrapper, GalagoBridgeDocument, DocumentProvider}
 
 /**
  * User: dietz
@@ -78,18 +78,21 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     try {
       m_searcher synchronized {
         val doc = m_searcher.getDocument(identifier, p)
+        if(doc == null) throw new BridgeDocumentNotFoundException(identifier)
         doc
       }
     } catch {
       case ex: NullPointerException => {
-        println("NPE while fetching documents " + identifier)
-        throw ex
+        throw new BridgeDocumentNotFoundException(identifier)
       }
       case ex => throw ex
     }
   }
 
 
+  def convertScoredDocToGalagoBridgeDoc(sd:ScoredDocument):GalagoBridgeDocument = {
+    new GalagoBridgeDocumentWrapper(sd.documentName, rawScore = Some(sd.score), rank = Some(sd.rank), galagoDocument = None)
+  }
 
   def getStatistics(query: String): NodeStatistics = {
     println("fetching stats: " + query)
@@ -109,7 +112,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     }
   }
 
-  def getBridgeDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToPulledDocument(identifier, getDocument(identifier, params))
+  def getBridgeDocument(identifier: String,  params:Option[Parameters] = None) = DocumentProvider.convertToBridgeDocument(identifier, getDocument(identifier, params))
 
   def getFieldTermCount(cleanTerm: String, field: String): Long = {
     if (cleanTerm.length > 0) {
