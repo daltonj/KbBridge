@@ -95,7 +95,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
   def getStatistics(query: String): NodeStatistics = {
-    println("fetching stats: " + query)
+//    println("fetching stats: " + query)
     m_searcher synchronized {
       try {
         val r = m_searcher

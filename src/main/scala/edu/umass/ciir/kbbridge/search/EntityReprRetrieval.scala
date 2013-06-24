@@ -54,7 +54,7 @@ class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:Entit
   def buildRawQueryFromEntitySetWithQuery(weightedEntities: Seq[(EntityRepr, Double)], queryStr: String, origWeight: Double): String = {
     val weightedEntityQueries =
       for ((entityRepr, weight) <- weightedEntities) yield {
-        println("\t"+weight+"\t" +buildRawQuery(entityRepr) )
+//        println("\t"+weight+"\t" +buildRawQuery(entityRepr) )
         buildRawQuery(entityRepr) -> weight
       }
     val entityQuery: String =
@@ -86,10 +86,10 @@ class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:Entit
       GalagoQueryLib.buildWeightedCombine(entity.words.toSeq)
     }
 
-    println ("queryQ "+queryQ)
-    println ("queryNV "+queryNV)
-    println ("queryM "+queryM)
-    println ("queryS "+queryS)
+//    println ("queryQ "+queryQ)
+//    println ("queryNV "+queryNV)
+//    println ("queryM "+queryM)
+//    println ("queryS "+queryS)
 
     val fullQuery =
       GalagoQueryLib.buildWeightedCombine(Seq(
