@@ -7,8 +7,6 @@ import org.lemurproject.galago.tupleflow.Parameters
 import edu.umass.ciir.kbbridge.nlp.NlpData.{Token, NlpXmlNerMention}
 import edu.umass.ciir.kbbridge.nlp.TokenXmlReader.Sentence
 import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
-import edu.umass.ciir.treckba.TrecKbaProperties
-;
 
 object NerLineReader {
 
@@ -131,25 +129,25 @@ object NerLineReader {
   }
 
 
-  def main(args: Array[String]) {
-
-     TrecKbaProperties.loadProperties("./config/trec-kba.properties")
-
-     val docProvider = DocumentBridgeMap.getProvider("kba", TrecKbaProperties.galagoJsonParameterFile, TrecKbaProperties.useLocalIndex, TrecKbaProperties.galagoSrv, TrecKbaProperties.galagoKbaPort, "kba", "kba")
-
-     val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
-
-     val p1 = new Parameters();
-     p1.set("terms", true);
-     p1.set("tags", false);
-
-     val doc = docProvider.getDocument("1318074334-f7477669dedc1236f91682c11bf6fba6", Some(p1));
-     val nerData = doc.metadata.get("nerData")
-     println(nerData)
-     val ners = NerLineReader.extractNerMentions(nerData).map(pair => pair._2)
-     var filteredNers = ners.filter ( m  => acceptableNerTypes.contains(m.ner))
-     for (ner <- filteredNers) {
-       println(ner.text)
-     }
-  }
+//  def main(args: Array[String]) {
+//
+//     TrecKbaProperties.loadProperties("./config/trec-kba.properties")
+//
+//     val docProvider = DocumentBridgeMap.getProvider("kba", TrecKbaProperties.galagoJsonParameterFile, TrecKbaProperties.useLocalIndex, TrecKbaProperties.galagoSrv, TrecKbaProperties.galagoKbaPort, "kba", "kba")
+//
+//     val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
+//
+//     val p1 = new Parameters();
+//     p1.set("terms", true);
+//     p1.set("tags", false);
+//
+//     val doc = docProvider.getDocument("1318074334-f7477669dedc1236f91682c11bf6fba6", Some(p1));
+//     val nerData = doc.metadata.get("nerData")
+//     println(nerData)
+//     val ners = NerLineReader.extractNerMentions(nerData).map(pair => pair._2)
+//     var filteredNers = ners.filter ( m  => acceptableNerTypes.contains(m.ner))
+//     for (ner <- filteredNers) {
+//       println(ner.text)
+//     }
+//  }
 }
