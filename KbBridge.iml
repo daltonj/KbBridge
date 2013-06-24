@@ -88,7 +88,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/.m2/repository/org/lemurproject/galago/core/3.3/core-3.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/lemurproject/galago/core/3.3/core-3.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -97,7 +97,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/.m2/repository/org/lemurproject/galago/tupleflow/3.3/tupleflow-3.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/lemurproject/galago/tupleflow/3.3/tupleflow-3.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
