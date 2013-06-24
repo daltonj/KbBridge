@@ -1,6 +1,5 @@
 package edu.umass.ciir.kbbridge.kb2text
 
-import edu.umass.ciir.treckba.NerLineReader
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import edu.umass.ciir.kbbridge.features.util.SetMeasures
 import org.lemurproject.galago.core.parse.Document
@@ -9,7 +8,7 @@ import edu.umass.ciir.kbbridge.nlp.NlpData.NlpXmlNerMention
 import edu.umass.ciir.kbbridge.nlp.TokenXmlReader.Sentence
 import collection.mutable.ListBuffer
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
-import edu.umass.ciir.kbbridge.text2kb.TextEntityReprGeneratorsUtil
+import edu.umass.ciir.kbbridge.text2kb.{NerLineReader, TextEntityReprGeneratorsUtil}
 
 /**
  * User: dietz
