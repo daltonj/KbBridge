@@ -21,18 +21,26 @@ object DocumentBridgeMap extends DocumentProvider {
 
   def getFieldTermCount(cleanTerm: String, field: String) = getDefaultDocumentProvider.getFieldTermCount(cleanTerm, field)
 
-  val searcherMap: mutable.Map[String, DocumentProvider] = new mutable.HashMap[String, DocumentProvider]()
+  val searcherMap: mutable.Map[String, GalagoRetrieval] = new mutable.HashMap[String, GalagoRetrieval]()
 
-  def getKbDocumentProvider:DocumentProvider = {
+  def getKbRetrieval:GalagoRetrieval= {
     searcherMap.getOrElseUpdate("kb", {
       new GalagoRetrieval(ConfInfo.galagoKbJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoKbSrv, ConfInfo.galagoKbPort)
     })
   }
 
-  def getDefaultDocumentProvider: DocumentProvider = {
+  def getDefaultRetrieval: GalagoRetrieval= {
     searcherMap.getOrElseUpdate("default", {
       new GalagoRetrieval(ConfInfo.galagoDefaultJsonParameterFile, ConfInfo.galagoUseLocalIndex, ConfInfo.galagoDefaultSrv, ConfInfo.galagoDefaultPort)
     })
+  }
+
+  def getKbDocumentProvider:DocumentProvider = {
+    getKbRetrieval
+  }
+
+  def getDefaultDocumentProvider: DocumentProvider = {
+    getDefaultRetrieval
   }
 
   private def getProvider(searcherName: String): Option[DocumentProvider] = {

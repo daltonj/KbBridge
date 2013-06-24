@@ -48,8 +48,9 @@ object WikiEntityRepr {
 
     // ============================
     // word context
-    val stanf_anchor = alternativeNameWeightsPerField("stanf_anchor-exact")
-    val topWords = SeqTools.topK(stanf_anchor.toSeq, 10)
+//    val stanf_anchor = alternativeNameWeightsPerField("stanf_anchor-exact")
+//    val topWords = SeqTools.topK(stanf_anchor.toSeq, 10)
+    val topWords = Seq()
 
     EntityRepr(entityName = entityName, queryId = Some(wikipediaTitle), nameVariants = topWeightedNames, neighbors = topWeightedNeighbors, words = topWords)
   }

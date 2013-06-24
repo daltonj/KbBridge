@@ -24,15 +24,51 @@ case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lamb
 
 class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:EntityRetrievalWeighting) {
 
+
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
 //    p.set("odw", 0.21D)
 //    p.set("uniw", 0.29D)
 //    p.set("uww", 0.50D)
 
+    val fullQuery: String = buildRawQuery(entity)
+
+    println(fullQuery)
+
+    galago.retrieveScoredDocuments(fullQuery, numResults)
+  }
+
+
+  def searchEntitySetWithQuery(queryStr:String, weightedEntities:Seq[(EntityRepr, Double)], origWeight:Double, numResults:Int): Seq[ScoredDocument] = {
+    //    p.set("odw", 0.21D)
+    //    p.set("uniw", 0.29D)
+    //    p.set("uww", 0.50D)
+
+
+    val fullQuery: String = buildRawQueryFromEntitySetWithQuery(weightedEntities, queryStr, origWeight)
+    println(fullQuery)
+
+    galago.retrieveScoredDocuments(fullQuery, numResults)
+  }
+
+
+  def buildRawQueryFromEntitySetWithQuery(weightedEntities: Seq[(EntityRepr, Double)], queryStr: String, origWeight: Double): String = {
+    val weightedEntityQueries =
+      for ((entityRepr, weight) <- weightedEntities) yield {
+        println("\t"+weight+"\t" +buildRawQuery(entityRepr) )
+        buildRawQuery(entityRepr) -> weight
+      }
+    val entityQuery: String =
+      GalagoQueryLib.buildWeightedCombine(weightedEntityQueries)
+
+    val fullQuery = GalagoQueryLib.buildWeightedCombine(Seq(queryStr -> origWeight, entityQuery -> (1.0 - origWeight)))
+    fullQuery
+  }
+
+  def buildRawQuery(entity: EntityRepr): String = {
     val queryQ = GalagoQueryLib.buildSeqDepForString(entity.entityName)
     val queryNV = {
       val innerQueries =
-        for((nv, weight) <- entity.nameVariants.toSeq) yield {
+        for ((nv, weight) <- entity.nameVariants.toSeq) yield {
           GalagoQueryLib.buildSeqDepForString(nv) -> weight
         }
       GalagoQueryLib.buildWeightedCombine(innerQueries)
@@ -40,7 +76,7 @@ class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:Entit
 
     val queryM = {
       val innerQueries =
-        for((neighbor, weight) <- entity.neighbors.toSeq) yield {
+        for ((neighbor, weight) <- entity.neighbors.toSeq) yield {
           GalagoQueryLib.buildSeqDepForString(neighbor.entityName) -> weight
         }
       GalagoQueryLib.buildWeightedCombine(innerQueries)
@@ -50,18 +86,18 @@ class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:Entit
       GalagoQueryLib.buildWeightedCombine(entity.words.toSeq)
     }
 
+    println ("queryQ "+queryQ)
+    println ("queryNV "+queryNV)
+    println ("queryM "+queryM)
+    println ("queryS "+queryS)
+
     val fullQuery =
       GalagoQueryLib.buildWeightedCombine(Seq(
-        queryQ ->  entityRetrievalWeighting.lambdaQ,
-        queryNV ->  entityRetrievalWeighting.lambdaV,
-        queryS ->  entityRetrievalWeighting.lambdaS,
-        queryM ->  entityRetrievalWeighting.lambdaM
+        queryQ -> entityRetrievalWeighting.lambdaQ,
+        queryNV -> entityRetrievalWeighting.lambdaV,
+        queryS -> entityRetrievalWeighting.lambdaS,
+        queryM -> entityRetrievalWeighting.lambdaM
       ))
-
-    println(fullQuery)
-
-    galago.retrieveScoredDocuments(fullQuery, numResults)
+    fullQuery
   }
-
-
 }

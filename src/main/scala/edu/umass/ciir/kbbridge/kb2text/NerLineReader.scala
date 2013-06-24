@@ -1,12 +1,10 @@
-package edu.umass.ciir.kbbridge.text2kb
+package edu.umass.ciir.kbbridge.kb2text
 
 import collection.mutable.ListBuffer
 import scala.io.Source
 
-import org.lemurproject.galago.tupleflow.Parameters
 import edu.umass.ciir.kbbridge.nlp.NlpData.{Token, NlpXmlNerMention}
 import edu.umass.ciir.kbbridge.nlp.TokenXmlReader.Sentence
-import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
 
 object NerLineReader {
 

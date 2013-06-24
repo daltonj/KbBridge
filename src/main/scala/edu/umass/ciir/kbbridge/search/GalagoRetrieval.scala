@@ -116,8 +116,8 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
 
   def getFieldTermCount(cleanTerm: String, field: String): Long = {
     if (cleanTerm.length > 0) {
-      val transformedText = "\"" + cleanTerm + "\"" + "." + field
-      val statistics = termStatisticsCache.get(transformedText);
+      val transformedText = "\"" + cleanTerm.replaceAllLiterally("\"","") + "\"" + "." + field
+      val statistics = termStatisticsCache.get(transformedText)
       //val statistics = getStatistics(transformedText)
       statistics.nodeFrequency
     } else {
