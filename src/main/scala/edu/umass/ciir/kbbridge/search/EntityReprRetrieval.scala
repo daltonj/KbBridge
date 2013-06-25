@@ -22,7 +22,7 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
 
-class EntityReprRetrieval(galago:GalagoRetrieval, entityRetrievalWeighting:EntityRetrievalWeighting) {
+class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting) {
 
 
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
