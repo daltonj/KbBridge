@@ -43,6 +43,9 @@ object DocumentBridgeMap extends DocumentProvider {
     getDefaultRetrieval
   }
 
+
+  def fakeTokenize(text: String) = getDefaultRetrieval.fakeTokenize(text)
+
   private def getProvider(searcherName: String): Option[DocumentProvider] = {
     searcherMap.get(searcherName)
   }

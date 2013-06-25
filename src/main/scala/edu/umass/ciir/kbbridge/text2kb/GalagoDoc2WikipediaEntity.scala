@@ -35,7 +35,6 @@ object GalagoDoc2WikipediaEntity {
     for (d <- docs) yield {
       scoredDocToEntity(d)
     }
-
   }
   def scoredDocToEntity(sd: ScoredDocument): ScoredWikipediaEntity = {
     val wikititle = sd.documentName
