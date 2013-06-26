@@ -15,7 +15,7 @@ import collection.mutable.ListBuffer
  * Date: 6/12/13
  * Time: 6:48 PM
  */
-class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double]) {
+class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true) {
   def buildEntityRepr(wikipediaTitle:String, bridgeForEntity: GalagoBridgeDocument):EntityRepr = {
 
 
@@ -45,8 +45,12 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double]) {
     // ============================
     // neighbors
 
-    val weightedNeighbors = extractNeighbors(entityName, wikipediaTitle, bridgeDocForEntity)
-    val topWeightedNeighbors = SeqTools.topK(weightedNeighbors, 10)
+
+    val topWeightedNeighbors =
+      if(buildM){
+      val weightedNeighbors = extractNeighbors(entityName, wikipediaTitle, bridgeDocForEntity)
+      SeqTools.topK(weightedNeighbors, 10)
+    } else Seq.empty
 
 
     // ============================
@@ -176,4 +180,4 @@ object WikiEntityReprNeighborFeatureWeights {
   val neighborFeatureWeights = equalWeights
 }
 
-object WikiEntityRepr extends WikiEntityRepr(WikiEntityReprNeighborFeatureWeights.passageWeights){}
+object WikiEntityRepr extends WikiEntityRepr(WikiEntityReprNeighborFeatureWeights.passageWeights, buildM = true){}
