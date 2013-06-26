@@ -29,6 +29,8 @@ object WikiEntityRepr {
     val fbName = alternativeNameWeightsPerField("fbname-exact")
     val anchor = alternativeNameWeightsPerField("anchor-exact")
 
+
+
     val weightedNames =
       SeqTools.sumDoubleMaps[String]( Seq(
         multiplyMapValue[String](redirect, 1.0),

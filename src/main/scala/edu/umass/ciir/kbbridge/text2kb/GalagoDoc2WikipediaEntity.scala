@@ -28,10 +28,6 @@ object GalagoDoc2WikipediaEntity {
   }
 
   def galagoResultToWikipediaEntities(docs: Seq[ScoredDocument]): Seq[ScoredWikipediaEntity] = {
-  //  val name2sd = seq.map(elem => (elem.documentName, elem))
-   // val name2doc = galago.getDocuments(seq.map(_.documentName))
-
-  //  val merged = SeqTools.alignMaps(name2sd, name2doc)
     for (d <- docs) yield {
       scoredDocToEntity(d)
     }
@@ -42,7 +38,6 @@ object GalagoDoc2WikipediaEntity {
     val rank = sd.rank
     val wikiId = IdMap.wikiTitle2WikiIdMap(wikititle)
 
-    //    val tacIdListOpt = IdMap.wikiTitle2TacIdMap.get(wikititle)
 
     new ScoredWikipediaEntity(
       wikititle
