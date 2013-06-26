@@ -172,6 +172,7 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double]) {
 object WikiEntityReprNeighborFeatureWeights {
   val equalWeights = Map("paragraphScore" -> 0.25, "outlinkCount" -> 0.25, "hasInlink" -> 0.25, "cooccurrenceCount" -> 0.25)
   val passageWeights = Map("paragraphScore" -> 0.9, "outlinkCount" -> 0.025, "hasInlink" -> 0.025, "cooccurrenceCount" -> 0.05)
+  val extremePassageWeights = Map("paragraphScore" -> 1.0, "outlinkCount" -> 0.0, "hasInlink" -> 0.0, "cooccurrenceCount" -> 0.0)
   val neighborFeatureWeights = equalWeights
 }
 
