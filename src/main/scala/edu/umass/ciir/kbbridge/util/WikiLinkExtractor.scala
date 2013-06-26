@@ -14,7 +14,7 @@ import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
  */
 object WikiLinkExtractor {
 
-  case class Anchor(source: String, destination: String, anchorText: String, paragraphId: Int);
+  case class Anchor(source: String, destination: String, anchorText: String, paragraphId: Int, rawAnchorText:String);
 
   def extractLinks(document: Document): Seq[Anchor] = {
 
@@ -74,7 +74,7 @@ object WikiLinkExtractor {
     } else {
       anchorText = destination
     }
-    new Anchor(src, destinationTitle, anchorText.replaceAll(",", "_"), paragraphIdx)
+    new Anchor(src, destinationTitle, anchorText.replaceAll(",", "_"), paragraphIdx, rawAnchorText = anchorText)
   }
 
 

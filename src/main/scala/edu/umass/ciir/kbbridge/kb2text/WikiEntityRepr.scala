@@ -8,13 +8,14 @@ import edu.umass.ciir.kbbridge.text2kb.TextEntityReprGeneratorsUtil
 import edu.umass.ciir.kbbridge.util.WikiLinkExtractor.Anchor
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import javax.management.remote.rmi._RMIConnection_Stub
+import collection.mutable.ListBuffer
 
 /**
  * User: dietz
  * Date: 6/12/13
  * Time: 6:48 PM
  */
-object WikiEntityRepr {
+class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double]) {
   def buildEntityRepr(wikipediaTitle:String, bridgeForEntity: GalagoBridgeDocument):EntityRepr = {
 
 
@@ -64,9 +65,12 @@ object WikiEntityRepr {
     r
   }
 
-  val neighborFeatureWeights = Map("paragraphScore" -> 0.25, "outlinkCount" -> 0.25, "hasInlink" -> 0.25, "cooccurrenceCount" -> 0.25)
   def extractNeighbors(entityName:String, wikipediaTitle:String, bridgeDocForEntity:GalagoBridgeDocument): Seq[(EntityRepr, Double)] = {
     val links = WikiLinkExtractor.extractLinks(bridgeDocForEntity.galagoDocument.get)
+    val usePassage = !bridgeDocForEntity.passageInfo.isEmpty
+    val passageText =
+      if(!usePassage)  ""
+      else bridgeDocForEntity.galagoDocument.get.text
 
     val destinations = links.groupBy(_.destination)
       .filterKeys(destination=>{
@@ -102,23 +106,33 @@ object WikiEntityRepr {
       (for ((destination, anchors) <- destinations) yield {
         val normDest = wikititleToEntityName(destination)
 
-        val weightedNeighborNameSeq =
-          for (anchor <- anchors) yield {
-            val paragraphScore = computeParagraphScore(anchor.paragraphId)
-            val normalizedAnchorText = TextNormalizer.normalizeText(anchor.anchorText)
-            normalizedAnchorText -> paragraphScore
+        val weightedParagraphNeighborSeq = new ListBuffer[(String, Double)]()
+//        val weightedPassageNeighborSeq = new ListBuffer[(String, Double)]()
+        for (anchor <- anchors)  {
+          val paragraphScore = computeParagraphScore(anchor.paragraphId)
+          val normalizedAnchorText = TextNormalizer.normalizeText(anchor.anchorText)
+
+          if (usePassage){
+            if(passageText contains anchor.rawAnchorText){
+              weightedParagraphNeighborSeq += normalizedAnchorText -> paragraphScore
+            }
+          } else {
+            weightedParagraphNeighborSeq += normalizedAnchorText -> paragraphScore
           }
-        val weightedNeighborNames = SeqTools.groupByMappedKey[String, Double, String, Double](weightedNeighborNameSeq, by=TextNormalizer.normalizeText(_), aggr = _.sum)
+
+        }
+        val weightedParagraphNeighbors = SeqTools.groupByMappedKey[String, Double, String, Double](weightedParagraphNeighborSeq, by=TextNormalizer.normalizeText(_), aggr = _.sum)
+//        val weightedPassageNeighbors = SeqTools.groupByMappedKey[String, Double, String, Double](weightedPassageNeighborSeq, by=TextNormalizer.normalizeText(_), aggr = _.sum)
 
 
         val neighborScores = {
-          val paragraphScore = weightedNeighborNames.map(_._2).sum
+          val paragraphScore = weightedParagraphNeighbors.map(_._2).sum
           val outlinkCount = anchors.length
           val hasInlink = inlinkCount.contains(destination)
           val cooccurrenceCount = contextCount(destination)
           NeighborScores(paragraphScore, outlinkCount, hasInlink, cooccurrenceCount)
         }
-        (normDest, weightedNeighborNames, neighborScores)
+        (normDest, weightedParagraphNeighbors, neighborScores)
       }).toSeq
 
     val summed = SeqTools.sumDoubleMaps(neighborinfo.map(_._3.asFeatureVector.toMap))
@@ -154,3 +168,11 @@ object WikiEntityRepr {
   }
 
 }
+
+object WikiEntityReprNeighborFeatureWeights {
+  val equalWeights = Map("paragraphScore" -> 0.25, "outlinkCount" -> 0.25, "hasInlink" -> 0.25, "cooccurrenceCount" -> 0.25)
+  val passageWeights = Map("paragraphScore" -> 0.9, "outlinkCount" -> 0.025, "hasInlink" -> 0.025, "cooccurrenceCount" -> 0.05)
+  val neighborFeatureWeights = equalWeights
+}
+
+object WikiEntityRepr extends WikiEntityRepr(WikiEntityReprNeighborFeatureWeights.passageWeights){}

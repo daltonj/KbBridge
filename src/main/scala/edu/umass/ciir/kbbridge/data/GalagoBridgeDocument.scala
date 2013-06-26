@@ -137,7 +137,12 @@ class GalagoBridgeDocumentWrapper(val documentname: String, val rawScore: Option
             ).zipWithIndex.toMap
 
           val charIndexMap = (
-            passageInfo.flatMap(begend => ((galagoDoc.termCharBegin(begend._1)).toInt until (galagoDoc.termCharEnd(begend._2-1)).toInt))
+            passageInfo.flatMap(begend => {
+              println("begend = "+begend )
+              val b =galagoDoc.termCharBegin(begend._1).toInt
+              val e =galagoDoc.termCharEnd(begend._2-1).toInt
+              b until e
+            })
             ).zipWithIndex.toMap
 
           val oldTermToNewBeginChar =

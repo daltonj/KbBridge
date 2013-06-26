@@ -176,4 +176,35 @@ object SeqTools {
     (for((feature, value) <- featureVector) yield value * weights(feature)).sum
   }
 
+
+  def normalizeIntervalList(intervalList:Seq[(Int,Int)] ):Seq[(Int,Int)] = {
+    val listBuffer = new ListBuffer[(Int,Int)]()
+    var lastEnd:Int = -1
+    var lastBegin:Int = -1
+    var first:Boolean = true
+    for((begin, end) <- intervalList.sortBy(_._1)){
+      if(first){
+        lastBegin = begin
+        lastEnd = end
+        first = false
+      }
+      if (begin > lastEnd){
+        // new segment
+        listBuffer += Pair(lastBegin, lastEnd)
+        lastBegin = begin
+        lastEnd = end
+      }
+      if(begin <= lastEnd){
+        // overlap
+        if(end > lastEnd){
+          // not fully contained
+          lastEnd = end
+        }
+      }
+    }
+    // flush the buffer
+    listBuffer += Pair(lastBegin, lastEnd)
+    listBuffer
+  }
+
 }
