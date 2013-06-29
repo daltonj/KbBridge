@@ -39,7 +39,15 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
         multiplyMapValue[String](anchor, 0.5)
       ))
 
-    val topWeightedNames = SeqTools.topK(weightedNames.toSeq, 10)
+    val topWeightedNames = Seq(entityName -> 1.0) ++ SeqTools.topK(weightedNames.toSeq, 10)
+
+    if(topWeightedNames.map(_._2).exists(_.isNaN)){
+      println("topWeightedNames contains nan "+topWeightedNames)
+      println(redirect)
+      println(fbName)
+      println(anchor)
+
+    }
 
 
     // ============================
@@ -140,15 +148,21 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
       }).toSeq
 
     val summed = SeqTools.sumDoubleMaps(neighborinfo.map(_._3.asFeatureVector.toMap))
-    val weightedNeighbors =
+    val weightedNeighbors: Seq[(EntityRepr, Double)] =
       for((normDest, names, neighborScores) <- neighborinfo) yield {
         val normalizedFeature = neighborScores.asNormalizedFeatureVector(summed.toSeq)
         val score = SeqTools.innerProduct(normalizedFeature, neighborFeatureWeights)
         (EntityRepr(entityName = normDest, nameVariants = names) -> score)
       }
 
-    val neighborInfo_ = neighborinfo.map(entry => entry._1 -> (entry._2, entry._3)).toMap
-    val weightedNeighbors_ = weightedNeighbors.toMap
+//    val neighborInfo_ = neighborinfo.map(entry => entry._1 -> (entry._2, entry._3)).toMap
+//    val weightedNeighbors_ = weightedNeighbors.toMap
+
+    if (weightedNeighbors.exists(_._2.isNaN())){
+      println("nans in weightedNeighbors "+weightedNeighbors)
+      println("neighborinfo "+neighborinfo)
+    }
+
     weightedNeighbors
 
 

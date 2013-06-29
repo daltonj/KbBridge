@@ -138,7 +138,7 @@ class GalagoBridgeDocumentWrapper(val documentname: String, val rawScore: Option
 
           val charIndexMap = (
             passageInfo.flatMap(begend => {
-              println("begend = "+begend )
+//              println("begend = "+begend )
               val b =galagoDoc.termCharBegin(begend._1).toInt
               val e =galagoDoc.termCharEnd(begend._2-1).toInt
               b until e
