@@ -6,7 +6,7 @@
     <version>0.1</version>
     <inceptionYear>2013</inceptionYear>
     <properties>
-        <scala.version>2.9.2</scala.version>
+        <scala.version>2.10.1</scala.version>
   </properties>
     <name>KB Bridge</name>
 
