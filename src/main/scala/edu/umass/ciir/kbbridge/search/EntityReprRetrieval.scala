@@ -21,8 +21,12 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 
 case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
+object Dmp{
+def dmp(args:String) {
+  println(args)
+}}
 
-class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting, val queryDumper:String=> Unit = {println _}) {
+class EntityReprRetrieval(val galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting, val x :String = "bla", val queryDumper:(String=> Unit) = Dmp.dmp) {
 
 
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {

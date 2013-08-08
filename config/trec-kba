@@ -1,5 +1,7 @@
 {
-    "index" : "/home/dietz/kbbridge/code/KbBridge/index/treckba-short/",
+    "y1index" : "/home/dietz/kbbridge/code/KbBridge/index/treckba-short/",
+    "y2index": "/home/dietz/kbbridge/kba2013-sample/index-2012-48/",
+    "index": "/home/dietz/kbbridge/kba2013-sample/index-2012-48/",
     "fieldIndexParameters" : { "stemmedPostings" : false },
     "stemmedPostings" : false,
     "formats" : {"kbadate" : "long", "kbastreamticks" : "long", "kbastreamtimestamp" : "string"},
@@ -9,5 +11,4 @@
     "uniw" : 0.8,
     "odw" : 0.15,
     "uww" : 0.05
-
 }

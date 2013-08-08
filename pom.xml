@@ -6,7 +6,7 @@
     <version>0.1</version>
     <inceptionYear>2013</inceptionYear>
     <properties>
-        <scala.version>2.10.1</scala.version>
+        <scala.version>2.9.2</scala.version>
   </properties>
     <name>KB Bridge</name>
 
@@ -185,10 +185,11 @@
  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <!--<version>3.1</version>-->
         <version>2.0.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.5</source>
+          <target>1.5</target>
         </configuration>
         <executions>
                     <execution>

@@ -5,5 +5,5 @@ package edu.umass.ciir.kbbridge.data
  * Date: 3/29/13
  */
 trait DocumentTextSource {
-  def fullText (docId:String)
+  def fullText (docId:String):String
 }
