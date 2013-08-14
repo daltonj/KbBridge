@@ -22,9 +22,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 
 case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
-
-class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting) extends Logging {
-
+class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting, val queryDumper:String=> Unit = {println _}) {
 
 
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
@@ -51,7 +49,8 @@ class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:E
 
 
     val fullQuery: String = buildRawQueryFromEntitySetWithQuery(weightedEntities, queryStr, origWeight)
-    println(fullQuery)
+    //println(fullQuery)
+    queryDumper(fullQuery)
 
     galago.retrieveScoredDocuments(fullQuery, numResults)
   }
