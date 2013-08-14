@@ -78,7 +78,7 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
   }
 
   def extractNeighbors(entityName:String, wikipediaTitle:String, bridgeDocForEntity:GalagoBridgeDocument): Seq[(EntityRepr, Double)] = {
-    val links = WikiLinkExtractor.extractLinks(bridgeDocForEntity.galagoDocument.get)
+    val links = WikiLinkExtractor.simpleExtractorNoContext(bridgeDocForEntity.galagoDocument.get)
     val usePassage = !bridgeDocForEntity.passageInfo.isEmpty
     val passageText =
       if(!usePassage)  ""

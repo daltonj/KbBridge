@@ -17,25 +17,22 @@ class NaiveQueryContextBuilder {
     if (query.entityName.length > 0) {
     try {
 //     var nlpFile = NlpExtractor.getOrQueueNlp(() => {mention.fullText}, mention.docId, mention.source)
-     var mChain = getCorefChainForMention(query)
-     val mTexts =
-        for(c <- mChain; m <- c) yield {
-          m.text
-        }
-      contexts = extractNameVariantsComponents(query.entityName, mTexts, true)
+     var neighbors = query.nerNeighbors.map(n => n.text)
+
+      contexts = extractNameVariantsComponents(query.entityName, neighbors, true)
       //println("all coref: " + query.queryId + ": " + mention.name + ":" + mTexts.mkString("\t"))
      } catch {
        case _ => println("Error getting NLP data for mention " + query.toString())
     }
    
-    var fullTextSeq = new ListBuffer[String]
-    fullTextSeq += query.fullText
-    val fullTextVariants = extractNameVariantsComponents(query.entityName, fullTextSeq, true)
-    
-    //println("coref name variants: " + query.queryId + ": "+  mention.name + ":" + contexts.mkString("\t"))
-    //println("text name variants: " + query.queryId + ": "+  mention.name + ":" + fullTextVariants.mkString("\t"))
-
-    contexts ++= fullTextVariants
+//    var fullTextSeq = new ListBuffer[String]
+//    fullTextSeq += query.fullText
+//    val fullTextVariants = extractNameVariantsComponents(query.entityName, fullTextSeq, true)
+//
+//    //println("coref name variants: " + query.queryId + ": "+  mention.name + ":" + contexts.mkString("\t"))
+//    //println("text name variants: " + query.queryId + ": "+  mention.name + ":" + fullTextVariants.mkString("\t"))
+//
+//    contexts ++= fullTextVariants
     }
     new QueryContext(contexts.toSeq, Seq(), Seq())
    
@@ -44,17 +41,14 @@ class NaiveQueryContextBuilder {
     
   }
 
-  def getCorefChainForMention(query: EntityMention): Seq[Seq[NlpXmlMention]] = {
+  def getCorefChainForMention(query: EntityMention): Seq[NlpXmlMention] = {
     val normName =   TextNormalizer.normalizeText(query.entityName)
     //      println("name = "+name+" normname = "+normName)
 
-    val corefChains = NlpReader.getNerSpans(query)
+    val corefChains = query.nerNeighbors
     //      val corefChains = NerExtractor.getXmlCorefForMentionFromFullText(() => {elQuery.fullText}, mention.docId, source = source)
-    val chainsWithName = corefChains.filter(chain =>  {
-
-      chain.exists(mention => {
+    val chainsWithName = corefChains.filter(mention => {
         TextNormalizer.normalizeText(mention.text) equals normName
-      })
 
     })
     chainsWithName

@@ -12,6 +12,7 @@ import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import edu.umass.ciir.galago.GalagoQueryLib
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import org.lemurproject.galago.core.retrieval.ScoredDocument
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * User: dietz
@@ -22,7 +23,8 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
 
-class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting) {
+class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting) extends Logging {
+
 
 
   def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
@@ -32,9 +34,13 @@ class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:E
 
     val fullQuery: String = buildRawQuery(entity)
 
-    println(fullQuery)
-
-    galago.retrieveScoredDocuments(fullQuery, numResults)
+  //  println(fullQuery)
+    val t0 = System.currentTimeMillis
+    val docs = galago.retrieveScoredDocuments(fullQuery, numResults)
+    val t1 = System.currentTimeMillis()
+    val diff = t1-t0
+    println(s"Query: $fullQuery time: $diff")
+    docs
   }
 
 

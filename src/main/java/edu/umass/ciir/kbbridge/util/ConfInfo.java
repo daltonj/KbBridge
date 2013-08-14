@@ -32,7 +32,7 @@ public class ConfInfo {
     public static final String galagoKbSrv = conf.getProperty("galagoKbSrv");
     public static final String galagoKbPort = conf.getProperty("galagoKbPort");
     public static final String galagoKbJsonParameterFile = conf.getProperty("galagoKbJsonParameterFile","./config/galago-fullwiki");
-    public static final int maxEntityCandidates = Integer.parseInt(conf.getProperty("candidates.maxEntityCandidates", "10"));
+    public static final int maxEntityCandidates = Integer.parseInt(conf.getProperty("candidates.maxEntityCandidates", "50"));
 
     public static final String galagoDefaultSrv = conf.getProperty("galagoDefaultSrv");
     public static final String galagoDefaultPort = conf.getProperty("galagoDefaultPort");
@@ -49,11 +49,7 @@ public class ConfInfo {
 
 
     public static final String idmap = conf.getProperty("idmapping","/iesl/canvas/jdalton/tac/data/tac-wiki-mapping");
-
-
-
-    public static final String nlpExtractPathStanford = createDir(conf.getProperty("nlpextract.pathstanford", "./extract-new/"));
-
+    public static final int maxCandidates = Integer.parseInt(conf.getProperty("candidates.maxCandidates", "100"));
 
     public static final String galagoTermCounts = conf.getProperty("galago.termcounts","termcounts.txt");
 

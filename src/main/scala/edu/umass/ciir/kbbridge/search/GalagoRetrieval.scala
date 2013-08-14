@@ -27,9 +27,9 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     .build(
     new CacheLoader[String, NodeStatistics]() {
       def load(key: String): NodeStatistics = {
-        return getStatistics(key);
+        getStatistics(key)
       }
-    });
+    })
 
   val globalParameters = Parameters.parse(new File(jsonConfigFile))
 
