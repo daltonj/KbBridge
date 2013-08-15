@@ -112,6 +112,15 @@ object SeqTools {
     seq.groupBy(x => x).map(entry => entry._1 -> entry._2.size)
   }
 
+  def sumMapsNum[K,N](maps: Seq[Map[K,N]])(implicit num: Numeric[N]):Map[K,N] ={
+    val flattenMaps = maps.map(_.toSeq).flatten
+    (
+      for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
+        val values = entries.map(_._2)
+        key -> values.sum
+      }
+      ).toMap
+  }
 
 
   def sumMaps[K](maps:Seq[Map[K,Int]]):Map[K,Int] ={
