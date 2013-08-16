@@ -34,7 +34,7 @@ object TacFullyLinkedEval extends App {
   eval()
 
   def eval() {
-    val querySet = TacQueryUtil.selectEvenOddSplitQueries()._2.toSet
+    val querySet = TacQueryUtil.allQueries
     val queriesByYear = TacQueryUtil.queriesByYear
     println("query stats:")
     println("total queries: " + querySet.size)
@@ -51,17 +51,18 @@ object TacFullyLinkedEval extends App {
       val nonNil =  testQueries.filterNot(q => q.isNilQuery)
       println("test non-nil queries: " + nonNil.size)
 
-      val links = for (q <- nonNil) yield {
+      var numNonMatches = 0
+      val links = for (q <- testQueries) yield {
         val doc = q.docId
         val file = new File(args(0) + File.separatorChar + doc + ".xml")
         if (file.exists()) {
-          val links = entityLinks(doc, file)
-
+          //val links = entityLinks(doc, file)
+          val links = docMentions(doc, file)
           var matchingLinks = links.filter(links => TextNormalizer.normalizeText(links.mention.entityName) equals TextNormalizer.normalizeText(q.entityName))
 
          // println("q: " + q.mentionId + " num exact matches: " + matchingLinks.size)
           if (matchingLinks.size == 0) {
-            matchingLinks = links.filter(links => TextNormalizer.normalizeText(links.mention.entityName) contains TextNormalizer.normalizeText(q.entityName.toLowerCase()))
+         //   matchingLinks = links.filter(links => TextNormalizer.normalizeText(links.mention.entityName) contains TextNormalizer.normalizeText(q.entityName.toLowerCase()))
           //  println("q: " + q.mentionId + " num subset matches: " + matchingLinks.size)
 
           }
@@ -70,6 +71,7 @@ object TacFullyLinkedEval extends App {
           val canonicalMention = if (matchingLinks.size == 0) {
             println("q: " + q + " no matches. ")
             new LinkedMention(q, Seq())
+            numNonMatches += 1
           } else {
             matchingLinks.head
           }
@@ -79,15 +81,25 @@ object TacFullyLinkedEval extends App {
           q.mentionId -> new LinkedMention(q, Seq())
         }
       }
-
+      println("num non-matches " + numNonMatches + " " + (numNonMatches.toDouble / testQueries.size) )
       val linksByMention = links.toMap
-      writeTACResults(testQueries, linksByMention, tacOutputDir + "/" + year, outputEvalDir + "/" + year)
+     // writeTACResults(testQueries, linksByMention, tacOutputDir + "/" + year, outputEvalDir + "/" + year)
     }
 
   }
 
   case class LinkedMention(mention: EntityMention, entityLinks: Seq[ScoredWikipediaEntity])
 
+  def docMentions(docId: String, file: File, candidateLimit: Int = 50) = {
+    val entityLinks = XML.loadFile(file) \\ "mention"
+    for (e <- entityLinks) yield {
+      //println((e \ "name").text)
+      val mention = new SimpleEntityMention(docId, "", (e \ "tokenBegin").text +"_"+ (e \ "tokenEnd").text, (e \ "string").text, "")
+      val linkedMention = LinkedMention(mention, Seq())
+      // println(linkedMention)
+      linkedMention
+    }
+  }
 
   def entityLinks(docId: String, file: File, candidateLimit: Int = 50) = {
     val entityLinks = XML.loadFile(file) \\ "entitylink"
