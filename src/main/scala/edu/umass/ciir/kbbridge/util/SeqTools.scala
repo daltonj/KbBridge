@@ -123,14 +123,20 @@ object SeqTools {
   }
 
 
+  def sumSeq[K,N](seq:Seq[(K,N)])(implicit num:Numeric[N]):Seq[(K,N)] = {
+    for((key, entries) <- seq.groupBy(_._1).toSeq) yield {
+      val values = entries.map(_._2)
+      key -> values.sum
+    }
+
+  }
+
   def sumMaps[K](maps:Seq[Map[K,Int]]):Map[K,Int] ={
     val flattenMaps = maps.map(_.toSeq).flatten
-    (
-      for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
-        val values = entries.map(_._2)
-        key -> values.sum
-      }
-      ).toMap
+    for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
+      val values = entries.map(_._2)
+      key -> values.sum
+    }
   }
 
 
