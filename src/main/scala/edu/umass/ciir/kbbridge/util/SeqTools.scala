@@ -108,6 +108,9 @@ object SeqTools {
     }
   }
 
+  def mapValues[A,B,C](map:Map[A,B], lambda:(B)=>C ):Map[A,C] = {
+    map.map(entry => entry._1 -> lambda(entry._2))
+  }
   def countMap[A](seq:Iterable[A]):Map[A,Int] = {
     seq.groupBy(x => x).map(entry => entry._1 -> entry._2.size)
   }
