@@ -2,7 +2,7 @@ package edu.umass.ciir.kbbridge
 
 import data.repr.EntityRepr
 import data.{GalagoBridgeDocumentWrapper, GalagoBridgeDocument, WikipediaEntity}
-import kb2text.{WikiEntityRepr, GalagoDoc2BridgeDoc}
+import kb2text.{BridgeWikiEntityRepr, GalagoDoc2BridgeDoc}
 import search.{GalagoDoc2RetrievedText, GalagoRetrieval, EntityRetrievalWeighting, EntityReprRetrieval}
 import util.{ConfInfo, KbBridgeProperties}
 import text2kb.{QVSMLocalTextEntityRepr, GalagoDoc2WikipediaEntity}
@@ -24,7 +24,7 @@ object EntityRetrieverMain {
   def buildEntityRepr(wikipediaTitle:String):EntityRepr = {
     val bridgeDocForEntity = new GalagoBridgeDocumentWrapper(documentname = wikipediaTitle, galagoDocument = None)
 
-    WikiEntityRepr.buildEntityRepr(wikipediaTitle, bridgeDocForEntity)
+    BridgeWikiEntityRepr.buildEntityRepr(wikipediaTitle, bridgeDocForEntity)
   }
 
   def retrieve(entityRepr: EntityRepr) {

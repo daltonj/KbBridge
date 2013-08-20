@@ -2,23 +2,27 @@ package edu.umass.ciir.kbbridge.kb2text
 
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
-import edu.umass.ciir.kbbridge.data.GalagoBridgeDocument
+import edu.umass.ciir.kbbridge.data.{GalagoBridgeDocumentWrapper, GalagoBridgeDocument}
 import edu.umass.ciir.kbbridge.util.{StringTools, SeqTools, WikiContextExtractor, WikiLinkExtractor}
+import edu.umass.ciir.kbbridge.text2kb.TextEntityReprGeneratorsUtil
+import edu.umass.ciir.kbbridge.util.WikiLinkExtractor.Anchor
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
+import javax.management.remote.rmi._RMIConnection_Stub
 import collection.mutable.ListBuffer
-import org.lemurproject.galago.core.parse.Document
 
 /**
  * User: dietz
  * Date: 6/12/13
  * Time: 6:48 PM
  */
-class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long) {
-  def buildEntityRepr(wikipediaTitle:String, maskedGalagoDoc: Document, passageInfo:Seq[(Int,Int)]):EntityRepr = {
+class BridgeWikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true) {
+  def buildEntityRepr(wikipediaTitle:String, bridgeForEntity: GalagoBridgeDocument):EntityRepr = {
 
 
     val entityName = wikipediaTitle.replaceAllLiterally("_", " ")
-    val alternativeNameWeightsPerField = WikiContextExtractor.getWeightedAnchorNames(entityName, maskedGalagoDoc, getFieldTermCount)
+    val bridgeDocForEntity = bridgeForEntity.ressurectDocument(DocumentBridgeMap.getKbDocumentProvider)
+
+    val alternativeNameWeightsPerField = WikiContextExtractor.getWeightedAnchorNames(entityName, bridgeDocForEntity.galagoDocument.get, DocumentBridgeMap.getKbDocumentProvider.getFieldTermCount _)
 
     // ============================
     // alternate names
@@ -52,7 +56,7 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
     val topWeightedNeighbors =
       if(buildM){
-      val weightedNeighbors = extractNeighbors(entityName, wikipediaTitle, maskedGalagoDoc, passageInfo)
+      val weightedNeighbors = extractNeighbors(entityName, wikipediaTitle, bridgeDocForEntity)
       SeqTools.topK(weightedNeighbors, 10)
     } else Seq.empty
 
@@ -73,12 +77,12 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
     r
   }
 
-  def extractNeighbors(entityName:String, wikipediaTitle:String, maskedGalagoDoc:Document, passageInfo:Seq[(Int,Int)]): Seq[(EntityRepr, Double)] = {
-    val links = WikiLinkExtractor.simpleExtractorNoContext(maskedGalagoDoc)
-    val usePassage = !passageInfo.isEmpty
+  def extractNeighbors(entityName:String, wikipediaTitle:String, bridgeDocForEntity:GalagoBridgeDocument): Seq[(EntityRepr, Double)] = {
+    val links = WikiLinkExtractor.simpleExtractorNoContext(bridgeDocForEntity.galagoDocument.get)
+    val usePassage = !bridgeDocForEntity.passageInfo.isEmpty
     val passageText =
       if(!usePassage)  ""
-      else maskedGalagoDoc.text
+      else bridgeDocForEntity.galagoDocument.get.text
 
     val destinations = links.groupBy(_.destination)
       .filterKeys(destination=>{
@@ -86,8 +90,8 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
           !ignoreWikiArticle(destination)
       })
 
-    val inlinkCount = srcInLinks(maskedGalagoDoc)
-    val contextCount = contextLinkCoocurrences(maskedGalagoDoc).toMap.withDefaultValue(0)
+    val inlinkCount = srcInLinks(bridgeDocForEntity)
+    val contextCount = contextLinkCoocurrences(bridgeDocForEntity).toMap.withDefaultValue(0)
 
 
     case class NeighborScores( paragraphScore:Double, outlinkCount:Int, hasInlink:Boolean, cooccurrenceCount:Int){
@@ -165,12 +169,12 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
   }
 
-  def srcInLinks(galagoDoc:Document):Seq[String] = {
-    galagoDoc.metadata.get("srcInlinks").split(" ")
+  def srcInLinks(bridgeDoc:GalagoBridgeDocument):Seq[String] = {
+    bridgeDoc.metadata("srcInlinks").split(" ")
   }
 
-  def contextLinkCoocurrences(galagoDoc:Document):Seq[(String, Int)] = {
-    for(line <- galagoDoc.metadata.get("contextLinks").split("\n")) yield {
+  def contextLinkCoocurrences(bridgeDoc:GalagoBridgeDocument):Seq[(String, Int)] = {
+    for(line <- bridgeDoc.metadata("contextLinks").split("\n")) yield {
       val title = StringTools.getSplitChunk(line, 0).get
       val countOpt = StringTools.toIntOption(StringTools.getSplitChunk(line, 1).getOrElse("0"))
       (title -> countOpt.getOrElse(0))
@@ -183,6 +187,11 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
 }
 
+object WikiEntityReprNeighborFeatureWeights {
+  val equalWeights = Map("paragraphScore" -> 0.25, "outlinkCount" -> 0.25, "hasInlink" -> 0.25, "cooccurrenceCount" -> 0.25)
+  val passageWeights = Map("paragraphScore" -> 0.9, "outlinkCount" -> 0.025, "hasInlink" -> 0.025, "cooccurrenceCount" -> 0.05)
+  val extremePassageWeights = Map("paragraphScore" -> 1.0, "outlinkCount" -> 0.0, "hasInlink" -> 0.0, "cooccurrenceCount" -> 0.0)
+  val neighborFeatureWeights = equalWeights
+}
 
-
-
+object BridgeWikiEntityRepr extends BridgeWikiEntityRepr(WikiEntityReprNeighborFeatureWeights.passageWeights, buildM = true){}
