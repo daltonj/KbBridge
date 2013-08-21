@@ -14,6 +14,8 @@ import org.lemurproject.galago.core.parse.Document
  * Time: 6:48 PM
  */
 class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long) {
+  import WikiEntityRepr._
+
   def buildEntityRepr(wikipediaTitle:String, maskedGalagoDoc: Document, passageInfo:Seq[(Int,Int)]):EntityRepr = {
 
 
@@ -67,27 +69,54 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
   }
 
   def ignoreWikiArticle(destination:String):Boolean = {
-    val r = destination.startsWith("Category:") ||
+    destination.startsWith("Category:") ||
       destination.startsWith("File:") ||
       destination.startsWith("List of ")
-    r
   }
 
+  def wikititleToEntityName(wikititle:String):String = {
+    StringTools.zapParentheses(wikititle.replaceAllLiterally("_"," "))
+  }
+
+
+  def findNeighbors(thisWikiTitle:String, galagoDocument:Document):WikiNeighbors = {
+    val outLinks = WikiLinkExtractor.simpleExtractorNoContext(galagoDocument)
+                   .filterNot(anchor => (anchor.destination == thisWikiTitle) || ignoreWikiArticle(anchor.destination))
+    val inLinks = srcInLinks(galagoDocument)
+    val contextLinks = contextLinkCoocurrences(galagoDocument).toMap.withDefaultValue(0)
+    WikiNeighbors(outLinks, inLinks, contextLinks)
+  }
+
+  def passageNeighborCount(wikipediaTitle:String, maskedGalagoDoc:Document, passageTextOpt:Option[String]):Seq[NeighborCount] = {
+
+    val passageText = if(passageTextOpt.isDefined) passageTextOpt.get else maskedGalagoDoc.text
+
+    val WikiNeighbors(outAnchors, inlinks, contextLinks) = findNeighbors(wikipediaTitle,maskedGalagoDoc)
+
+    val passageLinks = outAnchors.filter(link => passageText.contains(link.rawAnchorText) || passageText.contains(link.anchorText))
+
+    val destinations = passageLinks.groupBy(_.destination)
+
+    val neighborWithCounts  =
+    for ((destination, anchors) <- destinations) yield {
+      val inlinkCount = if (inlinks.contains(destination)) {1} else {0}
+      val contextCount = contextLinks(destination)
+      val canonicalDestName = wikititleToEntityName(destination)
+      NeighborCount(wikipediaTitle, destination, canonicalDestName, anchors, inlinkCount, contextCount)
+    }
+
+    neighborWithCounts.toSeq
+  }
+
+
   def extractNeighbors(entityName:String, wikipediaTitle:String, maskedGalagoDoc:Document, passageInfo:Seq[(Int,Int)]): Seq[(EntityRepr, Double)] = {
-    val links = WikiLinkExtractor.simpleExtractorNoContext(maskedGalagoDoc)
     val usePassage = !passageInfo.isEmpty
     val passageText =
       if(!usePassage)  ""
       else maskedGalagoDoc.text
 
+    val WikiNeighbors(links, inlinkCount, contextCount) = findNeighbors(wikipediaTitle,maskedGalagoDoc)
     val destinations = links.groupBy(_.destination)
-      .filterKeys(destination=>{
-        (destination != wikipediaTitle) &&
-          !ignoreWikiArticle(destination)
-      })
-
-    val inlinkCount = srcInLinks(maskedGalagoDoc)
-    val contextCount = contextLinkCoocurrences(maskedGalagoDoc).toMap.withDefaultValue(0)
 
 
     case class NeighborScores( paragraphScore:Double, outlinkCount:Int, hasInlink:Boolean, cooccurrenceCount:Int){
@@ -105,9 +134,6 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
       }
     }
 
-    def wikititleToEntityName(wikititle:String):String = {
-      StringTools.zapParentheses(wikititle.replaceAllLiterally("_"," "))
-    }
 
     def computeParagraphScore(pId:Int):Double = if(pId < 10) {1.0} else {0.1}
     val neighborinfo =
@@ -115,7 +141,6 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
         val normDest = wikititleToEntityName(destination)
 
         val weightedParagraphNeighborSeq = new ListBuffer[(String, Double)]()
-//        val weightedPassageNeighborSeq = new ListBuffer[(String, Double)]()
         for (anchor <- anchors)  {
           val paragraphScore = computeParagraphScore(anchor.paragraphId)
           val normalizedAnchorText = TextNormalizer.normalizeText(anchor.anchorText)
@@ -130,7 +155,6 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
         }
         val weightedParagraphNeighbors = SeqTools.groupByMappedKey[String, Double, String, Double](weightedParagraphNeighborSeq, by=TextNormalizer.normalizeText(_), aggr = _.sum)
-//        val weightedPassageNeighbors = SeqTools.groupByMappedKey[String, Double, String, Double](weightedPassageNeighborSeq, by=TextNormalizer.normalizeText(_), aggr = _.sum)
 
 
         val neighborScores = {
@@ -140,15 +164,15 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
           val cooccurrenceCount = contextCount(destination)
           NeighborScores(paragraphScore, outlinkCount, hasInlink, cooccurrenceCount)
         }
-        (normDest, weightedParagraphNeighbors, neighborScores)
+        ((destination,normDest), weightedParagraphNeighbors, neighborScores)
       }).toSeq
 
     val summed = SeqTools.sumDoubleMaps(neighborinfo.map(_._3.asFeatureVector.toMap))
     val weightedNeighbors: Seq[(EntityRepr, Double)] =
-      for((normDest, names, neighborScores) <- neighborinfo) yield {
+      for(((dest,normDest), names, neighborScores) <- neighborinfo) yield {
         val normalizedFeature = neighborScores.asNormalizedFeatureVector(summed.toSeq)
         val score = SeqTools.innerProduct(normalizedFeature, neighborFeatureWeights)
-        (EntityRepr(entityName = normDest, nameVariants = names) -> score)
+        (EntityRepr(entityName = normDest, nameVariants = names, wikipediaTitleInput = Some(dest)) -> score)
       }
 
 //    val neighborInfo_ = neighborinfo.map(entry => entry._1 -> (entry._2, entry._3)).toMap
@@ -183,6 +207,11 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
 }
 
+object WikiEntityRepr {
+  case class WikiNeighbors(outLinks:Seq[WikiLinkExtractor.Anchor], inlinks:Seq[String], contextLinks:Map[String,Int])
+  case class NeighborCount(sourceWikiTitle:String, targetWikiTitle:String, canonicalDestName:String, anchors: Seq[WikiLinkExtractor.Anchor], inlinkCount:Int, contextCount:Int)
+
+}
 
 
 
