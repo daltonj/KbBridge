@@ -82,7 +82,7 @@ object WikiLinkExtractor {
     var contextPages = new ListBuffer[String]
     for (link <- context) {
       var target = (link \ "target").text.replaceAll(" ", "_")
-      if (target.length() > 1 && !(destinationTitle equals target)) {
+      if (target.length() > 1 && !(destinationTitle equalsIgnoreCase target)) {
         contextPages += target
       }
     }
