@@ -2,17 +2,9 @@ package edu.umass.ciir.kbbridge.search
 
 import scala.Predef._
 import scala.Double
-import edu.umass.ciir.models.StopWordList
-import scala.collection.JavaConversions._
-import edu.umass.ciir.memindex.Query
-import org.lemurproject.galago.core.tools.Search.SearchResultItem
-import org.lemurproject.galago.core.tools.Search
-import edu.umass.ciir.kbbridge.util.{SeqTools, ConfInfo}
-import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import edu.umass.ciir.galago.GalagoQueryLib
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import org.lemurproject.galago.core.retrieval.ScoredDocument
-import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  * User: dietz

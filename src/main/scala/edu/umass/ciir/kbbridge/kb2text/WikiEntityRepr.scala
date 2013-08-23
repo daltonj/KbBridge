@@ -1,8 +1,6 @@
 package edu.umass.ciir.kbbridge.kb2text
 
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
-import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
-import edu.umass.ciir.kbbridge.data.GalagoBridgeDocument
 import edu.umass.ciir.kbbridge.util.{StringTools, SeqTools, WikiContextExtractor, WikiLinkExtractor}
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import collection.mutable.ListBuffer
@@ -68,32 +66,15 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
     EntityRepr(entityName = entityName, queryId = Some(wikipediaTitle), nameVariants = topWeightedNames, neighbors = topWeightedNeighbors, words = topWords)
   }
 
-  def ignoreWikiArticle(destination:String):Boolean = {
-    destination.startsWith("Category:") ||
-      destination.startsWith("File:") ||
-      destination.startsWith("List of ")
-  }
-
-  def wikititleToEntityName(wikititle:String):String = {
-    StringTools.zapParentheses(wikititle.replaceAllLiterally("_"," "))
-  }
 
 
-  def findNeighbors(thisWikiTitle:String, galagoDocument:Document):WikiNeighbors = {
-    val outLinks = WikiLinkExtractor.simpleExtractorNoContext(galagoDocument)
-                   .filterNot(anchor => (anchor.destination == thisWikiTitle) || ignoreWikiArticle(anchor.destination))
-    val inLinks = srcInLinks(galagoDocument)
-    val contextLinks = contextLinkCoocurrences(galagoDocument).toMap.withDefaultValue(0)
-    WikiNeighbors(outLinks, inLinks, contextLinks)
-  }
 
-  def passageNeighborCount(wikipediaTitle:String, maskedGalagoDoc:Document, passageTextOpt:Option[String]):Seq[NeighborCount] = {
+  def documentNeighborCount(wikipediaTitle:String, galagoDoc:Document):Seq[NeighborCount] = {
 
-    val passageText = if(passageTextOpt.isDefined) passageTextOpt.get else maskedGalagoDoc.text
 
-    val WikiNeighbors(outAnchors, inlinks, contextLinks) = findNeighbors(wikipediaTitle,maskedGalagoDoc)
+    val WikiNeighbors(outAnchors, inlinks, contextLinks) = findNeighbors(wikipediaTitle,galagoDoc)
 
-    val passageLinks = outAnchors.filter(link => passageText.contains(link.rawAnchorText) || passageText.contains(link.anchorText))
+    val passageLinks = outAnchors
 
     val destinations = passageLinks.groupBy(_.destination)
 
@@ -189,6 +170,53 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 
   }
 
+
+}
+
+object WikiEntityRepr {
+  case class WikiNeighbors(outLinks:Seq[WikiLinkExtractor.Anchor], inlinks:Seq[String], contextLinks:Map[String,Int])
+  case class NeighborCount(sourceWikiTitle:String, targetWikiTitle:String, canonicalDestName:String, anchors: Seq[WikiLinkExtractor.Anchor], inlinkCount:Int, contextCount:Int)
+
+  def passageNeighborCount(wikipediaTitle:String, maskedGalagoDoc:Document, passageTextOpt:Option[String]):Seq[NeighborCount] = {
+
+    val passageText = if(passageTextOpt.isDefined) passageTextOpt.get else maskedGalagoDoc.text
+
+    val WikiNeighbors(outAnchors, inlinks, contextLinks) = findNeighbors(wikipediaTitle,maskedGalagoDoc)
+
+    val passageLinks = outAnchors.filter(link => passageText.contains(link.rawAnchorText) || passageText.contains(link.anchorText))
+
+    val destinations = passageLinks.groupBy(_.destination)
+
+    val neighborWithCounts  =
+      for ((destination, anchors) <- destinations) yield {
+        val inlinkCount = if (inlinks.contains(destination)) {1} else {0}
+        val contextCount = contextLinks(destination)
+        val canonicalDestName = wikititleToEntityName(destination)
+        NeighborCount(wikipediaTitle, destination, canonicalDestName, anchors, inlinkCount, contextCount)
+      }
+
+    neighborWithCounts.toSeq
+  }
+  def findNeighbors(thisWikiTitle:String, galagoDocument:Document):WikiNeighbors = {
+    val outLinks = WikiLinkExtractor.simpleExtractorNoContext(galagoDocument)
+                   .filterNot(anchor => (anchor.destination == thisWikiTitle) || ignoreWikiArticle(anchor.destination))
+    val inLinks = srcInLinks(galagoDocument)
+    val contextLinks = contextLinkCoocurrences(galagoDocument).toMap.withDefaultValue(0)
+    WikiNeighbors(outLinks, inLinks, contextLinks)
+  }
+
+
+  def ignoreWikiArticle(destination:String):Boolean = {
+    destination.startsWith("Category:") ||
+      destination.startsWith("File:") ||
+      destination.startsWith("List of ")
+  }
+
+
+  def wikititleToEntityName(wikititle:String):String = {
+    StringTools.zapParentheses(wikititle.replaceAllLiterally("_"," "))
+  }
+
   def srcInLinks(galagoDoc:Document):Seq[String] = {
     galagoDoc.metadata.get("srcInlinks").split(" ")
   }
@@ -205,11 +233,7 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
     for((key,value) <- m) yield key -> (scalar * value)
   }
 
-}
 
-object WikiEntityRepr {
-  case class WikiNeighbors(outLinks:Seq[WikiLinkExtractor.Anchor], inlinks:Seq[String], contextLinks:Map[String,Int])
-  case class NeighborCount(sourceWikiTitle:String, targetWikiTitle:String, canonicalDestName:String, anchors: Seq[WikiLinkExtractor.Anchor], inlinkCount:Int, contextCount:Int)
 
 }
 
