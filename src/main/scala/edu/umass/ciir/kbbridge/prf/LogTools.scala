@@ -28,7 +28,7 @@ object LogTools {
    * @param logProbs probabilities in log space
    * @return log marginal
    */
-  def logExpSumNormalizer(logProbs:Seq[Double]):Double = {
+  def logExpSumNormalizer(logProbs:Iterable[Double]):Double = {
     val pi = logProbs.max
     val exp_log_pi =
       for(logpi <- logProbs) yield {
