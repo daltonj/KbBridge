@@ -135,7 +135,12 @@ object SeqTools {
       val values = entries.map(_._2)
       key -> values.sum
     }
-
+  }
+  def sumSeqBy[K,N](seq:Seq[(K,N)], by:(Iterable[N]=>N))(implicit num:Numeric[N]):Seq[(K,N)] = {
+    for((key, entries) <- seq.groupBy(_._1).toSeq) yield {
+      val values = entries.map(_._2)
+      key -> by(values)
+    }
   }
 
   def sumMaps[K](maps:Seq[Map[K,Int]]):Map[K,Int] ={
