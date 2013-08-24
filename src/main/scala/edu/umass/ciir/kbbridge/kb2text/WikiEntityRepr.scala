@@ -17,7 +17,7 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
   def buildEntityRepr(wikipediaTitle:String, maskedGalagoDoc: Document, passageInfo:Seq[(Int,Int)]):EntityRepr = {
 
 
-    val entityName = wikipediaTitle.replaceAllLiterally("_", " ")
+    val entityName = WikiEntityRepr.wikititleToEntityName(wikipediaTitle)
     val alternativeNameWeightsPerField = WikiContextExtractor.getWeightedAnchorNames(entityName, maskedGalagoDoc, getFieldTermCount)
 
     // ============================
