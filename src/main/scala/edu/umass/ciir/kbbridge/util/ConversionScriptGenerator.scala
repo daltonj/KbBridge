@@ -4,7 +4,6 @@ package edu.umass.ciir.kbbridge.util
  * User: jdalton
  * Date: 4/5/13
  */
-package cc.refectorie.user.dietz.tacco.entitylinking.loadrun
 
 import java.io.File
 import java.io.PrintWriter
