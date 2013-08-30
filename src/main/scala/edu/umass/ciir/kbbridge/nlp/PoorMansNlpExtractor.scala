@@ -40,11 +40,11 @@ object PoorMansNlpExtractor {
     val sentOffsetToSentId = sentOffsetToSentId0.map(offsetId => (offsetId._1, offsetId._2+1)) // sentence ids start with 1
     sentOffsetToSentId
   }
-  def offsetToSentId(offset:Int, sentOffsetToSentId:Seq[(Int,Int)]){
+  def offsetToSentId(offset:Int, sentOffsetToSentId:Seq[(Int,Int)]):Int = {
     val lastOpt = sentOffsetToSentId.takeWhile(offsetId => offsetId._1 <= offset).lastOption     // "." included therefore <=
     lastOpt match {
       case Some((sentEndOffset, sentId)) => {
-        if (offset > sentEndOffset) sentId +1  // in case last sentence did not end on a "."
+        if (offset > sentEndOffset) sentId + 1  // in case last sentence did not end on a "."
         else sentId
       }
       case None => 1 // actually there are no sentences

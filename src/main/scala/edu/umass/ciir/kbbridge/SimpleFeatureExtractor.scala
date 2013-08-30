@@ -1,13 +1,13 @@
 package edu.umass.ciir.kbbridge
 
-import data.TacEntityMention
 import features.{ Mention2EntityFeatureHasher}
 import java.io.{PrintWriter, FileOutputStream, File}
 import serial.EntityMentionProtos.{LinkerFeature, ScoredWikipediaEntityFeatures, EntityMentionLinkerFeatures, TacEntityMentionLinkerFeatures}
-import tac.TacQueryUtil
+import edu.umass.ciir.kbbridge.tac.{TacDocumentXmlLoader, TacFileMap, TacQueryUtil}
 import text2kb.KnowledgeBaseCandidateGenerator
 import util.ConfInfo
 import com.google.protobuf.TextFormat
+import edu.umass.ciir.kbbridge.data.TacEntityMention
 
 
 /*
@@ -25,9 +25,20 @@ import com.google.protobuf.TextFormat
  *  
  */
 object SimpleFeatureExtractor {
-  val overwrite = false
 
-  val acceptableNerTypes = Set("PERSON", "LOCATION", "ORGANIZATION", "UNK")
+//  val nlpSteps = Seq(
+//
+//    ClearSegmenter,
+//    // Truecasing??
+//    POS1,
+//    // LemmaAnnotator,
+//    NER1,
+//    //FactorieNERComponent,
+//    DepParser2,
+//    ParseBasedMentionFinding
+//  )
+
+  val overwrite = false
 
   def extractFeatures(mention: TacEntityMention) {
 
@@ -98,6 +109,17 @@ object SimpleFeatureExtractor {
     }
     println("Done writing features...")
   }
+
+//  def annotateQueryDoc(documentId: String) {
+//    val fileName = ConfInfo.sourceDir + TacFileMap.docIdToFilenameMap(documentId)
+//    val text = TacDocumentXmlLoader.fullTextViaTacSource(fileName)
+//    val doc = new Document(text)
+//    doc.setName(gDoc.name)
+//    for (step <- nlpSteps) {
+//      step.process(doc)
+//    }
+//    val xml = Document2XmlRenderer.xml(doc)
+//  }
 
   def main(args: Array[String]) {
 

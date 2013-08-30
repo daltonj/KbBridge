@@ -10,12 +10,14 @@ import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
 
 object WikiContextExtractor {
 
+  val fieldsToCount = Set("anchor-exact", "redirect-exact", "fbname-exact")
+// val fieldsToCount = Set("stanf_anchor-exact", "anchor-exact", "redirect-exact", "fbname-exact")
 
   def getAlternativeNames(entityName: String, galagoEnitityDoc: Document): Seq[String] = {
     val fields = galagoEnitityDoc.tags
     val terms = galagoEnitityDoc.terms
 
-    val fieldsToCount = Set("stanf_anchor-exact", "anchor-exact", "redirect-exact", "fbname-exact")
+//    val fieldsToCount = Set("stanf_anchor-exact", "anchor-exact", "redirect-exact", "fbname-exact")
     var fieldExactMatchCount = 0
     val tokenMap = scala.collection.mutable.HashMap[String, ListBuffer[String]]()
 
@@ -36,7 +38,6 @@ object WikiContextExtractor {
   }
 
 
-  val fieldsToCount = Set("stanf_anchor-exact", "anchor-exact", "redirect-exact", "fbname-exact")
 
   def getAnchorNameCounts(entityName: String, anchorField: String, galagoEnitityDoc: Document): Map[String, Int] = {
     val fields = galagoEnitityDoc.tags
@@ -61,11 +62,11 @@ object WikiContextExtractor {
     filtered
   }
 
-  def getAnchorProbs(termCounts: Map[String, Int], anchorField: String): Map[String, Double] = {
+  def getAnchorProbs(termCounts: Map[String, Int], anchorField: String, getFieldTermCount:(String, String) => Long): Map[String, Double] = {
 
     val anchorProbs = new HashMap[String, Double]()
-    for ((alternateName, inlinkCount) <- termCounts) {
-      val totalAnchorCount = DocumentBridgeMap.getKbDocumentProvider.getFieldTermCount(alternateName, anchorField) + 0.5
+    for ((alternateName, inlinkCount) <- termCounts){
+      val totalAnchorCount = getFieldTermCount(alternateName, anchorField) + 0.5
 
       if (totalAnchorCount <= inlinkCount) {
         anchorProbs += (alternateName -> 1.0)
@@ -78,11 +79,11 @@ object WikiContextExtractor {
   }
 
 
-  def getWeightedAnchorNames(entityName:String, galagoEntityDoc:Document):Map[String, Map[String,Double]] = {
+  def getWeightedAnchorNames(entityName:String, galagoEntityDoc:Document, getFieldTermCount:(String, String) => Long):Map[String, Map[String,Double]] = {
     val result = new ListBuffer[(String, Map[String,Double])]()
     for(anchorField <- fieldsToCount)  {
       val nameCounts = getAnchorNameCounts(entityName, anchorField, galagoEntityDoc)
-      val nameWeights = getAnchorProbs(nameCounts, anchorField)
+      val nameWeights = getAnchorProbs(nameCounts, anchorField, getFieldTermCount)
       result += (anchorField -> nameWeights)
     }
     result.toMap

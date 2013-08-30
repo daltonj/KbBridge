@@ -13,11 +13,7 @@ import edu.umass.ciir.kbbridge.util.ConfInfo
 object KnowledgeBaseCandidateGenerator {
 
   def apply() : KnowledgeBaseCandidateGenerator = {
-    val galago = new GalagoRetrieval(
-      jsonConfigFile= ConfInfo.galagoKbJsonParameterFile,
-      galagoUseLocalIndex = true
-    )
-
+    val galago = DocumentBridgeMap.getKbRetrieval
     new KnowledgeBaseCandidateGenerator(galago, EntityRetrievalWeighting(0.5, 0.5, 0.0, 0.0), QVTextEntityRepr)
   }
 

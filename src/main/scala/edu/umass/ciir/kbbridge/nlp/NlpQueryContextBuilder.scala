@@ -35,17 +35,13 @@ class NlpQueryContextBuilder {
     val name = query.entityName
 
     val normName = normalizeText(name)
-    val corefChains = NlpReader.getNerSpans(query)
-    val chainsWithName = corefChains.filter(chain => {
-
-      chain.exists(mention => {
-        (normalizeText(mention.text) equals normName) || // in sync with...
-          (acronymTexts(mention) contains normName)
-      })
+    val corefChains = query.nerNeighbors
+    //      val corefChains = NerExtractor.getXmlCorefForMentionFromFullText(() => {elQuery.fullText}, mention.docId, source = source)
+    val chainsWithName = corefChains.filter(mention => {
+      TextNormalizer.normalizeText(mention.text) equals normName
 
     })
-    chainsWithName.flatten
-
+    chainsWithName
   }
 
   def getAlternateNamesFromCoref(query: EntityMention, chain: Seq[NlpXmlMention]): Seq[String] = {
@@ -93,8 +89,8 @@ class NlpQueryContextBuilder {
   //-
 
   def allNers(query: EntityMention): scala.Seq[(String, NlpXmlMention)] = {
-    val fullners = NlpReader.getNerSpans(query)
-    for (chain <- fullners; mention <- chain; if (
+    val fullners = query.nerNeighbors
+    for (mention <- fullners if (
       (mention.text.length > 2) &&
         !mention.text.toLowerCase.startsWith("http") &&
         mention.tokens.exists((tok => tok.pos.toLowerCase.startsWith("nn") || tok.pos == ("?"))) // ? is from poor mans ner
@@ -140,9 +136,9 @@ class NlpQueryContextBuilder {
   //--
   //-
 
-  def allSentences(query: EntityMention): scala.Seq[String] = {
-    NlpReader.allSentences(query)
-  }
+//  def allSentences(query: EntityMention): scala.Seq[String] = {
+//    //NlpReader.allSentences(query)
+//  }
 
   //  def allSentences(query: TacELQuery2): scala.Seq[String] = {
   //    if (ConfInfo.useKbaNlpReader) {
@@ -209,15 +205,15 @@ class NlpQueryContextBuilder {
       for ((ner, mention) <- nersNotForMention; if (sentenceSet.contains(mention.sentenceId) && (nerContextTypes contains ner)))
       yield mention
 
-    val sentencesForMention = {
-      val sents = allSentences(query)
-      if (sentenceSet contains 0) {
-        sents.filter(sent => normNamesSet.exists(nameVar => sent.contains(nameVar)))
-      } else {
-        sentenceSet.toSeq.sorted.map(idx => sents.get(idx - 1))
-      }
+//    val sentencesForMention = {
+//      val sents = allSentences(query)
+//      if (sentenceSet contains 0) {
+//        sents.filter(sent => normNamesSet.exists(nameVar => sent.contains(nameVar)))
+//      } else {
+//        sentenceSet.toSeq.sorted.map(idx => sents.get(idx - 1))
+//      }
 
-    }
+//    }
 
 
     val queryOffsets = nersForMention.flatMap(ner => Seq(ner.charBegin, ner.charEnd))
@@ -251,7 +247,7 @@ class NlpQueryContextBuilder {
     //    println("NERs: " + query.queryId + ": "+  query.name + ":" + nersForMention.mkString("\t"))
     //    println("contextual NERs: " + query.queryId + ": "+  query.name + ":" + nersInSentence.mkString("\t"))
     //    println("altNames " + query.queryId + ": "+  query.name + ":" + names.mkString("\t"))
-    QueryContext(altNames = names, contextNers = nersInSentence.map(_.text), allNersSorted = nersByOffsetDistance, sentencesForMention)
+    QueryContext(altNames = names, contextNers = nersInSentence.map(_.text), allNersSorted = nersByOffsetDistance)
   }
 
 

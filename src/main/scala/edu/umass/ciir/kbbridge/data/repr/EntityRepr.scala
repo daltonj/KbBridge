@@ -13,5 +13,10 @@ case class EntityRepr(entityName:String, queryId:Option[String]=None, nameVarian
       case None => entityName.replaceAllLiterally(" ","_")
     }
   }
+
+  /** same thing, just without neighbors. This is needed for unroll/flatten operations */
+  def dropNeighbors:EntityRepr = {
+    EntityRepr(entityName, queryId, nameVariants, Seq.empty, words, wikipediaTitleInput)
+  }
 }
 

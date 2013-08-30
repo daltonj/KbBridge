@@ -89,7 +89,7 @@ trait LocalDocumentFeatures extends FeatureGenerator {
     val mentionEntityLm = new LanguageModel(1)
     mentionEntityLm.addDocument(normalizedMentionNers, false)
 
-    val outlinks = WikiLinkExtractor.extractLinks(galagoEntityDoc).map(a => TextNormalizer.normalizeText(a.destination)).toSet
+    val outlinks = WikiLinkExtractor.simpleExtractorNoContext(galagoEntityDoc).map(a => TextNormalizer.normalizeText(a.destination)).toSet
     //println("num outlinks: " + outlinks.size())
 
     val inlinks = galagoEntityDoc.metadata.getOrElse("srcInlinks", "").split("\\s+").map(in => TextNormalizer.normalizeText(in)).toSet

@@ -263,17 +263,17 @@ class PseudoRelevanceNerReweighter {
     new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoPseudoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv, galagoPort = ConfInfo.galagoPseudoPort)
   }
 
-  def getNormSentences(query: EntityMention): Seq[String] = {
-    val nlpSentences: Seq[String] = NlpReader.allSentences(query)
-
-    val normSentences =
-      if (!nlpSentences.isEmpty) {
-        nlpSentences.map(TextNormalizer.normalizeText(_))
-      } else {
-        PoorMansNlpExtractor.splitSentences(query.fullText).map(sent => TextNormalizer.normalizeText(sent))
-      }
-    normSentences
-  }
+//  def getNormSentences(query: EntityMention): Seq[String] = {
+//    val nlpSentences: Seq[String] = NlpReader.allSentences(query)
+//
+//    val normSentences =
+//      if (!nlpSentences.isEmpty) {
+//        nlpSentences.map(TextNormalizer.normalizeText(_))
+//      } else {
+//        PoorMansNlpExtractor.splitSentences(query.fullText).map(sent => TextNormalizer.normalizeText(sent))
+//      }
+//    normSentences
+//  }
 
   def sentenceFilterNers(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], normSentences: Seq[String]): Seq[String] = {
 

@@ -108,13 +108,18 @@ object SeqTools {
     }
   }
 
+  def mapValues[A,B,C](map:Map[A,B], lambda:(B)=>C ):Map[A,C] = {
+    map.map(entry => entry._1 -> lambda(entry._2))
+  }
+
+  def mapValuesToDouble[A,N](map:Map[A,N])(implicit num: Numeric[N]):Map[A,Double] = {
+    SeqTools.mapValues[A,N,Double](map, num.toDouble(_))
+  }
   def countMap[A](seq:Iterable[A]):Map[A,Int] = {
     seq.groupBy(x => x).map(entry => entry._1 -> entry._2.size)
   }
 
-
-
-  def sumMaps[K](maps:Seq[Map[K,Int]]):Map[K,Int] ={
+  def sumMapsNum[K,N](maps: Seq[Map[K,N]])(implicit num: Numeric[N]):Map[K,N] ={
     val flattenMaps = maps.map(_.toSeq).flatten
     (
       for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
@@ -122,6 +127,28 @@ object SeqTools {
         key -> values.sum
       }
       ).toMap
+  }
+
+
+  def sumSeq[K,N](seq:Seq[(K,N)])(implicit num:Numeric[N]):Seq[(K,N)] = {
+    for((key, entries) <- seq.groupBy(_._1).toSeq) yield {
+      val values = entries.map(_._2)
+      key -> values.sum
+    }
+  }
+  def sumSeqBy[K,N](seq:Seq[(K,N)], by:(Iterable[N]=>N))(implicit num:Numeric[N]):Seq[(K,N)] = {
+    for((key, entries) <- seq.groupBy(_._1).toSeq) yield {
+      val values = entries.map(_._2)
+      key -> by(values)
+    }
+  }
+
+  def sumMaps[K](maps:Seq[Map[K,Int]]):Map[K,Int] ={
+    val flattenMaps = maps.map(_.toSeq).flatten
+    for((key, entries) <- flattenMaps.groupBy(_._1)) yield {
+      val values = entries.map(_._2)
+      key -> values.sum
+    }
   }
 
 

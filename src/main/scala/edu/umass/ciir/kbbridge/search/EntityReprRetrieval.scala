@@ -2,13 +2,6 @@ package edu.umass.ciir.kbbridge.search
 
 import scala.Predef._
 import scala.Double
-import edu.umass.ciir.models.StopWordList
-import scala.collection.JavaConversions._
-import edu.umass.ciir.memindex.Query
-import org.lemurproject.galago.core.tools.Search.SearchResultItem
-import org.lemurproject.galago.core.tools.Search
-import edu.umass.ciir.kbbridge.util.{SeqTools, ConfInfo}
-import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import edu.umass.ciir.galago.GalagoQueryLib
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import org.lemurproject.galago.core.retrieval.ScoredDocument
@@ -21,46 +14,12 @@ import org.lemurproject.galago.core.retrieval.ScoredDocument
 
 case class EntityRetrievalWeighting(lambdaQ:Double=1.0, lambdaV:Double=1.0, lambdaS:Double=0.0, lambdaM:Double=0.0)
 
-object Dmp{
-def dmp(args:String) {
-  println(args)
-}}
-
-class EntityReprRetrieval(val galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting, val x :String = "bla", val queryDumper:(String=> Unit) = Dmp.dmp) {
-
-
-  def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
-//    p.set("odw", 0.21D)
-//    p.set("uniw", 0.29D)
-//    p.set("uww", 0.50D)
-
-    val fullQuery: String = buildRawQuery(entity)
-
-    println(fullQuery)
-
-    galago.retrieveScoredDocuments(fullQuery, numResults)
-  }
-
-
-  def searchEntitySetWithQuery(queryStr:String, weightedEntities:Seq[(EntityRepr, Double)], origWeight:Double, numResults:Int): Seq[ScoredDocument] = {
-    //    p.set("odw", 0.21D)
-    //    p.set("uniw", 0.29D)
-    //    p.set("uww", 0.50D)
-
-
-    val fullQuery: String = buildRawQueryFromEntitySetWithQuery(weightedEntities, queryStr, origWeight)
-    //println(fullQuery)
-    queryDumper(fullQuery)
-
-    galago.retrieveScoredDocuments(fullQuery, numResults)
-  }
-
-
-  def buildRawQueryFromEntitySetWithQuery(weightedEntities: Seq[(EntityRepr, Double)], queryStr: String, origWeight: Double): String = {
+object EntityReprRetrieval {
+  def buildRawQueryFromEntitySetWithQuery(weightedEntities: Seq[(EntityRepr, Double)], queryStr: String, origWeight: Double,entityRetrievalWeighting:EntityRetrievalWeighting): String = {
     val weightedEntityQueries =
       for ((entityRepr, weight) <- weightedEntities) yield {
-//        println("\t"+weight+"\t" +buildRawQuery(entityRepr) )
-        buildRawQuery(entityRepr) -> weight
+        //        println("\t"+weight+"\t" +buildRawQuery(entityRepr) )
+        buildRawQuery(entityRepr, entityRetrievalWeighting) -> weight
       }
     val entityQuery: String =
       GalagoQueryLib.buildWeightedCombine(weightedEntityQueries)
@@ -69,7 +28,7 @@ class EntityReprRetrieval(val galago:GalagoRetrieval, val entityRetrievalWeighti
     fullQuery
   }
 
-  def buildRawQuery(entity: EntityRepr): String = {
+  def buildRawQuery(entity: EntityRepr,entityRetrievalWeighting:EntityRetrievalWeighting): String = {
     val queryQ = GalagoQueryLib.buildSeqDepForString(entity.entityName)
     val queryNV = {
       val innerQueries =
@@ -91,10 +50,10 @@ class EntityReprRetrieval(val galago:GalagoRetrieval, val entityRetrievalWeighti
       GalagoQueryLib.buildWeightedCombine(entity.words.toSeq)
     }
 
-//    println ("queryQ "+queryQ)
-//    println ("queryNV "+queryNV)
-//    println ("queryM "+queryM)
-//    println ("queryS "+queryS)
+    //    println ("queryQ "+queryQ)
+    //    println ("queryNV "+queryNV)
+    //    println ("queryM "+queryM)
+    //    println ("queryS "+queryS)
 
     val fullQuery =
       GalagoQueryLib.buildWeightedCombine(Seq(
@@ -104,5 +63,44 @@ class EntityReprRetrieval(val galago:GalagoRetrieval, val entityRetrievalWeighti
         queryM -> entityRetrievalWeighting.lambdaM
       ))
     fullQuery
+  }
+
+}
+
+class EntityReprRetrieval(galago:GalagoRetrieval, val entityRetrievalWeighting:EntityRetrievalWeighting, val queryDumper:String=> Unit = {println _}) {
+
+
+  def search(entity:EntityRepr, numResults:Int): Seq[ScoredDocument] = {
+//    p.set("odw", 0.21D)
+//    p.set("uniw", 0.29D)
+//    p.set("uww", 0.50D)
+
+    val fullQuery: String = buildRawQuery(entity)
+
+  //  println(fullQuery)
+    val t0 = System.currentTimeMillis
+    val docs = galago.retrieveScoredDocuments(fullQuery, numResults)
+    val t1 = System.currentTimeMillis()
+    val diff = t1-t0
+    println(s"Query: $fullQuery time: $diff")
+    docs
+  }
+
+
+  def searchEntitySetWithQuery(queryStr:String, weightedEntities:Seq[(EntityRepr, Double)], origWeight:Double, numResults:Int): Seq[ScoredDocument] = {
+    //    p.set("odw", 0.21D)
+    //    p.set("uniw", 0.29D)
+    //    p.set("uww", 0.50D)
+
+
+    val fullQuery: String = EntityReprRetrieval.buildRawQueryFromEntitySetWithQuery(weightedEntities, queryStr, origWeight, entityRetrievalWeighting)
+    //println(fullQuery)
+    queryDumper(fullQuery)
+
+    galago.retrieveScoredDocuments(fullQuery, numResults)
+  }
+
+  def buildRawQuery(entity: EntityRepr): String = {
+    EntityReprRetrieval.buildRawQuery(entity,entityRetrievalWeighting)
   }
 }

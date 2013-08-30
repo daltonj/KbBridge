@@ -14,7 +14,7 @@ import edu.umass.ciir.kbbridge.search.DocumentBridgeMap
  */
 object WikiLinkExtractor {
 
-  case class Anchor(source: String, destination: String, anchorText: String, paragraphId: Int, rawAnchorText:String);
+  case class Anchor(source: String, destination: String, anchorText: String, paragraphId: Int, rawAnchorText: String);
 
   def extractLinks(document: Document): Seq[Anchor] = {
 
@@ -24,7 +24,7 @@ object WikiLinkExtractor {
     if (body != null) {
       body = body.replace("\\n", "\n")
     }
-    val anchors = new ListBuffer[Seq[Anchor]]
+
     val paragraphs =
       if (body == null || body == "\\N") NodeSeq.Empty
       else {
@@ -50,6 +50,29 @@ object WikiLinkExtractor {
     links.flatten.toSet.toSeq
   }
 
+  def simpleExtractorNoContext(document: Document): Seq[Anchor] = {
+    val body = document.metadata.get("xml")
+    try {
+      val bodyXML = XML.loadString(body.replace("\\n", "\n"))
+      val links = bodyXML \\ "link"
+      val outAnchors = links.map(link => extractAnchorFromLink(document.name, link)).filter(a => a.source != a.destination && a.destination.length() > 0 && a.anchorText.length() > 0)
+      outAnchors
+    } catch {
+      case e: org.xml.sax.SAXParseException => extractLinks(document)
+    }
+  }
+
+  def extractAnchorFromLink(src: String, n: Node) = {
+    val destination = (n \ "target").text
+
+    val p = (n \ "part").text
+    val anchorText = if (p.length > 0) {
+      p
+    } else {
+      destination
+    }
+    new Anchor(src, destination.replaceAll(" ", "_"), anchorText.replaceAll(",", "_"), -1, rawAnchorText = anchorText)
+  }
 
   def extractLinkText(src: String, n: Node, context: scala.xml.NodeSeq, paragraphIdx: Int): Anchor = {
 
@@ -59,7 +82,7 @@ object WikiLinkExtractor {
     var contextPages = new ListBuffer[String]
     for (link <- context) {
       var target = (link \ "target").text.replaceAll(" ", "_")
-      if (target.length() > 1 && !(destinationTitle equals target)) {
+      if (target.length() > 1 && !(destinationTitle equalsIgnoreCase target)) {
         contextPages += target
       }
     }
@@ -86,7 +109,7 @@ object WikiLinkExtractor {
       0.0d,
       1)
     val document = DocumentBridgeMap.getKbDocumentProvider.getDocument("Amherst_College")
-    val links = extractLinks(document)
+    val links = simpleExtractorNoContext(document)
     for (a <- links) {
       println(a)
     }

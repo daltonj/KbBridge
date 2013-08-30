@@ -115,7 +115,7 @@ class RankLibReranker(rankerModelFile: String) {
 
     for (mention <- mentions) {
       val mentionFeatures = mention.getMention
-      val tacEntityMention = new TacEntityMention(mentionFeatures.getSourceDocId, mentionFeatures.getEntityType, mentionFeatures.getMentionId, mentionFeatures.getEntityName, Seq(), mention.getNodeId, mention.getGroundTruthWikiTitle)
+      val tacEntityMention = new TacEntityMention(mentionFeatures.getSourceDocId, mentionFeatures.getEntityType, mentionFeatures.getMentionId, mentionFeatures.getEntityName, Seq(), mention.getNodeId, mention.getGroundTruthWikiTitle, Seq())
       val reranked = rerankCandidatesWithFeatures(tacEntityMention, mentionFeatures.getCandidatesList)
       resultMap += tacEntityMention.mentionId -> reranked
     }

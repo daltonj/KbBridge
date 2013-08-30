@@ -11,6 +11,7 @@
     <name>KB Bridge</name>
 
     <repositories>
+
         <repository>
             <id>scala-tools.org</id>
             <name>Scala-Tools Maven2 Repository</name>
@@ -39,6 +40,19 @@
   </pluginRepositories>
 
 <dependencies>
+
+<dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-api</artifactId>
+	<version>1.7.2</version>
+</dependency>
+
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>scalalogging-slf4j_2.10</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
@@ -74,7 +88,7 @@
          <dependency>
            <groupId>edu.umass.ciir</groupId>
            <artifactId>ciirshared</artifactId>
-           <version>1.0</version>
+           <version>s2.10.1-g3.4-1.0</version>
          </dependency>
 
        <dependency>

@@ -44,7 +44,8 @@ object TacQueryLoader {
           , mentionId = q.getQueryId
           , entityName = q.getQueryName
           , nodeId = nodeId
-          , groundTruth = IdMap.tacId2WikiTitleMap.getOrElse(q.getQueryNodeId,"")
+          , groundTruth = IdMap.tacId2WikiTitleMap.getOrElse(q.getQueryNodeId,""),
+          nerNeighbors = Seq()
         )
 
 
