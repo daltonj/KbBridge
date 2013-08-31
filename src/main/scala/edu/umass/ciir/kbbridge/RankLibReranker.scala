@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 import ciir.umass.edu.learning.{RankerFactory, DataPoint}
 import collection.mutable
 import search.DocumentBridgeMap
-import serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
+import edu.umass.ciir.kbbridge.serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
 import util.ConfInfo
 import scala.collection.JavaConversions._
 import org.lemurproject.galago.tupleflow.Parameters
