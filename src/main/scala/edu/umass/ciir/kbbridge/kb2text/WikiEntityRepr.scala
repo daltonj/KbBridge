@@ -7,6 +7,7 @@ import org.lemurproject.galago.core.parse.Document
 import scala.Some
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import scala.collection.JavaConversions._
+import edu.umass.ciir.models.StopWordList
 
 /**
  * User: dietz
@@ -74,7 +75,11 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
 //    val topWords = SeqTools.topK(stanf_anchor.toSeq, 10)
     val topWords =
       if(buildText){
-        val termCounts = SeqTools.countMap[String](maskedGalagoDoc.terms.map(_.toString))
+        val textterms =
+        for(tag <- maskedGalagoDoc.tags; if tag.name =="text") yield {
+          maskedGalagoDoc.terms.slice(tag.begin, tag.end).filterNot(StopWordList.isStopWord)
+        }
+        val termCounts = SeqTools.countMap[String](textterms.flatten)
         if(!termCounts.isEmpty) {
           Distribution[String](SeqTools.mapValuesToDouble(termCounts).toSeq).topK(10).normalize.distr
         }  else Seq.empty
