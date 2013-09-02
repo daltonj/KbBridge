@@ -79,7 +79,7 @@ object WikiContextExtractor {
   }
 
 
-  def getWeightedAnchorNames(entityName:String, galagoEntityDoc:Document, getFieldTermCount:(String, String) => Long):Map[String, Map[String,Double]] = {
+  def getWeightedAnchorNames(entityName:String, galagoEntityDoc:Document, getFieldTermCount:(String, String) => Long, fieldsToCount:Set[String]=fieldsToCount):Map[String, Map[String,Double]] = {
     val result = new ListBuffer[(String, Map[String,Double])]()
     for(anchorField <- fieldsToCount)  {
       val nameCounts = getAnchorNameCounts(entityName, anchorField, galagoEntityDoc)
