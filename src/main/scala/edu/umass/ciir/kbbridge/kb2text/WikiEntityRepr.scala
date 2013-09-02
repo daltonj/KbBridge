@@ -1,17 +1,26 @@
 package edu.umass.ciir.kbbridge.kb2text
 
 import edu.umass.ciir.kbbridge.data.repr.EntityRepr
-import edu.umass.ciir.kbbridge.util.{StringTools, SeqTools, WikiContextExtractor, WikiLinkExtractor}
+import edu.umass.ciir.kbbridge.util._
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import collection.mutable.ListBuffer
 import org.lemurproject.galago.core.parse.Document
+import scala.Some
+import edu.umass.ciir.kbbridge.data.repr.EntityRepr
+import scala.collection.JavaConversions._
 
 /**
  * User: dietz
  * Date: 6/12/13
  * Time: 6:48 PM
  */
-class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long) {
+
+trait EntityReprBuilder {
+  def buildEntityRepr(wikipediaTitle:String, maskedGalagoDoc: Document, passageInfo:Seq[(Int,Int)]):EntityRepr
+
+}
+
+class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long, val buildNames:Boolean = true, val buildText:Boolean = false) extends EntityReprBuilder{
   import WikiEntityRepr._
 
   def buildEntityRepr(wikipediaTitle:String, maskedGalagoDoc: Document, passageInfo:Seq[(Int,Int)]):EntityRepr = {
@@ -26,24 +35,27 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
     val fbName = alternativeNameWeightsPerField("fbname-exact")
     val anchor = alternativeNameWeightsPerField("anchor-exact")
 
+    val topWeightedNames =
+      if(buildNames){
 
+        val weightedNames =
+          SeqTools.sumDoubleMaps[String]( Seq(
+            multiplyMapValue[String](redirect, 1.0),
+            multiplyMapValue[String](fbName, 1.0),
+            multiplyMapValue[String](anchor, 0.5)
+          ))
 
-    val weightedNames =
-      SeqTools.sumDoubleMaps[String]( Seq(
-        multiplyMapValue[String](redirect, 1.0),
-        multiplyMapValue[String](fbName, 1.0),
-        multiplyMapValue[String](anchor, 0.5)
-      ))
+        val topWeightedNames = Seq(entityName -> 1.0) ++ SeqTools.topK(weightedNames.toSeq, 10)
 
-    val topWeightedNames = Seq(entityName -> 1.0) ++ SeqTools.topK(weightedNames.toSeq, 10)
+        if(topWeightedNames.map(_._2).exists(_.isNaN)){
+          println("topWeightedNames contains nan "+topWeightedNames)
+          println(redirect)
+          println(fbName)
+          println(anchor)
 
-    if(topWeightedNames.map(_._2).exists(_.isNaN)){
-      println("topWeightedNames contains nan "+topWeightedNames)
-      println(redirect)
-      println(fbName)
-      println(anchor)
-
-    }
+        }
+        topWeightedNames
+      } else Seq.empty
 
 
     // ============================
@@ -61,7 +73,15 @@ class WikiEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:B
     // word context
 //    val stanf_anchor = alternativeNameWeightsPerField("stanf_anchor-exact")
 //    val topWords = SeqTools.topK(stanf_anchor.toSeq, 10)
-    val topWords = Seq()
+    val topWords =
+      if(buildText){
+        val termCounts = SeqTools.countMap[String](maskedGalagoDoc.terms.map(_.toString))
+        if(!termCounts.isEmpty) {
+          Distribution[String](SeqTools.mapValuesToDouble(termCounts).toSeq).topK(10).normalize.distr
+        }  else Seq.empty
+      } else {
+        Seq.empty
+      }
 
     EntityRepr(entityName = entityName, queryId = Some(wikipediaTitle), nameVariants = topWeightedNames, neighbors = topWeightedNeighbors, words = topWords)
   }

@@ -11,7 +11,7 @@ import org.lemurproject.galago.core.parse.Document
  * Date: 6/12/13
  * Time: 6:48 PM
  */
-class StanfordAnchorEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long) {
+class StanfordAnchorEntityRepr(val neighborFeatureWeights:Map[String,Double], val buildM:Boolean = true, val getFieldTermCount:(String, String) => Long) extends EntityReprBuilder{
   import WikiEntityRepr._
 
   val spamnames = Set("http","link","here","web","site","view","click","provided","source","original","download","website","live","article","read","wiki","quelle","background","artikel","encyclopedia","mehr","german","french","english","address")
