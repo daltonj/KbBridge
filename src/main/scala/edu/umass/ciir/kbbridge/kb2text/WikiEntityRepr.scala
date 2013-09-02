@@ -1,6 +1,5 @@
 package edu.umass.ciir.kbbridge.kb2text
 
-import edu.umass.ciir.kbbridge.data.repr.EntityRepr
 import edu.umass.ciir.kbbridge.util._
 import edu.umass.ciir.kbbridge.nlp.TextNormalizer
 import collection.mutable.ListBuffer
