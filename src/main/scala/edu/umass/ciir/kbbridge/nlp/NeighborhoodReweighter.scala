@@ -17,7 +17,7 @@ import edu.umass.ciir.kbbridge.search.{DocumentBridgeMap, GalagoRetrieval}
  * Time: 8:50 PM
  * To change this template use File | Settings | File Templates.
  */
-class PseudoRelevanceNerReweighter {
+class NeighborhoodReweighter {
   val normalizeText = TextNormalizer.normalizeText _
 
   def acronymText(name: String): String = {
@@ -73,25 +73,13 @@ class PseudoRelevanceNerReweighter {
 
   def buildLocalWeights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]=Seq()): Map[String, Double] = {
 
-    val distinctNers = nercontext.distinct
-    val normtext = TextNormalizer.normalizeText(query.fullText)
-    val normTokens = normtext.split("\\s+")
-    val lm = new LanguageModel(6)
-    lm.addDocument(normTokens, true)
-    lm.calculateProbabilities()
-
-    val nerWeights = distinctNers.map(ner => (ner -> {
-      val te = lm.getTermEntry(TextNormalizer.normalizeText(ner))
-      if (te == null) {
-        0.0d
-      } else {
-        te.getProbability()
-      }
-    }
-
-      )).toMap
-    val filteredWeights = nerWeights.filter(_._2 > 0.0).toMap
-    filteredWeights
+    val normalizedMentionNers = nercontext.map(name => TextNormalizer.normalizeText(name))
+    val mentionEntityLm = new LanguageModel(1)
+    mentionEntityLm.addDocument(normalizedMentionNers, false)
+    mentionEntityLm.calculateProbabilities()
+    val entries = mentionEntityLm.getEntries
+    val termMap = entries.map(te => te.getTerm -> te.getProbability).toMap
+    termMap
   }
 
 
@@ -260,7 +248,7 @@ class PseudoRelevanceNerReweighter {
 
 
   def pseudoKbSearcher: GalagoRetrieval = {
-    new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoPseudoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv, galagoPort = ConfInfo.galagoPseudoPort)
+    new GalagoRetrieval(jsonConfigFile = ConfInfo.sourceGalagoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv)
   }
 
 //  def getNormSentences(query: EntityMention): Seq[String] = {
