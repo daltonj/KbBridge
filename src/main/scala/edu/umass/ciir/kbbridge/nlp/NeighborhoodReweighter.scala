@@ -67,11 +67,13 @@ class NeighborhoodReweighter {
   // =================
   // reweight ners
 
-  def buildTrivialReweights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]=Seq()): Map[String, Double] = {
+  def buildTrivialReweights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String] = Seq()
+                           ): Map[String, Double] = {
     nercontext.map(ner => (TextNormalizer.normalizeText(ner) -> 1.0)).toMap
   }
 
-  def buildLocalWeights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String]=Seq()): Map[String, Double] = {
+  def buildLocalWeights(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String] = Seq()
+                       ): Map[String, Double] = {
 
     val normalizedMentionNers = nercontext.map(name => TextNormalizer.normalizeText(name))
     val mentionEntityLm = new LanguageModel(1)
@@ -83,56 +85,58 @@ class NeighborhoodReweighter {
   }
 
 
-  def reweightNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String]): Map[String, Double] = {
+  def reweightNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String],
+                                selectedNormSentences: Seq[String]
+                               ): Map[String, Double] = {
 
     throw new Exception("Update me to use the new entity representation!")
-//    // fire query
-//    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, nercontext.distinct, selectedNormSentences)
-//
-//    if (pseudoresults.length > 0) {
-//
-//      // get results as TacELQueries
-//      val pseudoQueries_score = new ListBuffer[(EntityMention, Double)]()
-//      val scoredDocs = new ListBuffer[ScoredDocument]
-//      for (r <- pseudoresults; if r.identifier != query.docId) {
-//        val pq = new SimpleEntityMention(docId = r.identifier, entityType = "UNK", mentionId = r.identifier, entityName = query.entityName, fullText="")
-//        println("PSEUDORESULT\t" + query.mentionId + "\t" + r.identifier + "\t" + r.score)
-//        scoredDocs += new ScoredDocument(r.identifier, r.rank, r.score)
-//        pseudoQueries_score += Pair(pq, r.score)
-//      }
-//
-//      val scores = RelevanceModel.logsToPosteriors2(scoredDocs.toList)
-//
-//      val nerDocFreq = scala.collection.mutable.HashMap[String, Int]()
-//      for (ner <- nercontext) nerDocFreq += (ner -> 0)
-//      val nerReweights = scala.collection.mutable.HashMap[String, Double]()
-//      for (ner <- nercontext) nerReweights += (ner -> 0.0)
-//
-//      println("scanning " + pseudoQueries_score.length + " pseudo results")
-//
-//      for ((pq, score) <- pseudoQueries_score) {
-//        val normtext = TextNormalizer.normalizeText(pq.fullText)
-//        val normTokens = normtext.split("\\s+")
-//        val docLm = new LanguageModel(4)
-//        docLm.addDocument(normTokens, true)
-//        docLm.calculateProbabilities()
-//
-//        for (ner <- nercontext) {
-//          val termEntry = docLm.getTermEntry(TextNormalizer.normalizeText(ner))
-//          if (termEntry != null) {
-//            val oldCount = nerDocFreq(ner)
-//            nerDocFreq.update(ner, oldCount + 1)
-//            val oldWeight = nerReweights(ner)
-//            val curWeight = termEntry.getProbability * scores(pq.docId)
-//            nerReweights.update(ner, oldWeight + curWeight)
-//          }
-//        }
-//      }
-//      val filteredWeights = nerReweights.filter(_._2 > 0.0).toMap
-//      filteredWeights
-//    } else {
-//      Map()
-//    }
+    //    // fire query
+    //    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, nercontext.distinct, selectedNormSentences)
+    //
+    //    if (pseudoresults.length > 0) {
+    //
+    //      // get results as TacELQueries
+    //      val pseudoQueries_score = new ListBuffer[(EntityMention, Double)]()
+    //      val scoredDocs = new ListBuffer[ScoredDocument]
+    //      for (r <- pseudoresults; if r.identifier != query.docId) {
+    //        val pq = new SimpleEntityMention(docId = r.identifier, entityType = "UNK", mentionId = r.identifier, entityName = query.entityName, fullText="")
+    //        println("PSEUDORESULT\t" + query.mentionId + "\t" + r.identifier + "\t" + r.score)
+    //        scoredDocs += new ScoredDocument(r.identifier, r.rank, r.score)
+    //        pseudoQueries_score += Pair(pq, r.score)
+    //      }
+    //
+    //      val scores = RelevanceModel.logsToPosteriors2(scoredDocs.toList)
+    //
+    //      val nerDocFreq = scala.collection.mutable.HashMap[String, Int]()
+    //      for (ner <- nercontext) nerDocFreq += (ner -> 0)
+    //      val nerReweights = scala.collection.mutable.HashMap[String, Double]()
+    //      for (ner <- nercontext) nerReweights += (ner -> 0.0)
+    //
+    //      println("scanning " + pseudoQueries_score.length + " pseudo results")
+    //
+    //      for ((pq, score) <- pseudoQueries_score) {
+    //        val normtext = TextNormalizer.normalizeText(pq.fullText)
+    //        val normTokens = normtext.split("\\s+")
+    //        val docLm = new LanguageModel(4)
+    //        docLm.addDocument(normTokens, true)
+    //        docLm.calculateProbabilities()
+    //
+    //        for (ner <- nercontext) {
+    //          val termEntry = docLm.getTermEntry(TextNormalizer.normalizeText(ner))
+    //          if (termEntry != null) {
+    //            val oldCount = nerDocFreq(ner)
+    //            nerDocFreq.update(ner, oldCount + 1)
+    //            val oldWeight = nerReweights(ner)
+    //            val curWeight = termEntry.getProbability * scores(pq.docId)
+    //            nerReweights.update(ner, oldWeight + curWeight)
+    //          }
+    //        }
+    //      }
+    //      val filteredWeights = nerReweights.filter(_._2 > 0.0).toMap
+    //      filteredWeights
+    //    } else {
+    //      Map()
+    //    }
 
 
     //    nercontextExtended.map(ner => (ner -> 1.0)).toMap
@@ -140,17 +144,21 @@ class NeighborhoodReweighter {
 
   val nlpQueryBuilder = new NlpQueryContextBuilder()
 
-  def reweightAddNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String], addPseudoNers: Boolean = false): Map[String, Double] = {
+  def reweightAddNersWithPseudorel(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String],
+                                   selectedNormSentences: Seq[String], addPseudoNers: Boolean = false
+                                  ): Map[String, Double] = {
     throw new Exception("Update me to use the new entity representation!")
 
-//    // fire query
-//    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, java.util.Collections.emptyList(), selectedNormSentences)
-//    val scoredDocs = pseudoresults.map(r => new ScoredDocument(r.identifier, r.rank, r.score))
-//    val results = reweightDocsAddNew(scoredDocs, query, nercontext, nameVariances, selectedNormSentences, addPseudoNers)
-//    results
+    //    // fire query
+    //    val pseudoresults = pseudoKbSearcher.search(new Query(query.mentionId + "-pseudo", query.entityName, ConfInfo.maxCandidatesPseudo), nameVariances.toList, java.util.Collections.emptyList(), selectedNormSentences)
+    //    val scoredDocs = pseudoresults.map(r => new ScoredDocument(r.identifier, r.rank, r.score))
+    //    val results = reweightDocsAddNew(scoredDocs, query, nercontext, nameVariances, selectedNormSentences, addPseudoNers)
+    //    results
   }
 
-  def reweightDocsAddNew(pseudoresults: Seq[ScoredDocument], query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], selectedNormSentences: Seq[String], addPseudoNers: Boolean = false): Map[String, Double] = {
+  def reweightDocsAddNew(pseudoresults: Seq[ScoredDocument], query: EntityMention, nercontext: Seq[String],
+                         nameVariances: Seq[String], selectedNormSentences: Seq[String], addPseudoNers: Boolean = false
+                        ): Map[String, Double] = {
     if (pseudoresults.length > 0) {
       reweightDocsAddNewWithDocs(query, pseudoresults, nercontext, nameVariances, addPseudoNers)
     } else {
@@ -165,7 +173,9 @@ class NeighborhoodReweighter {
    * @param addPseudoNers if true, new ners will be added/swapped in the nercontext
    * @return
    */
-  def reweightDocsAddNewWithDocs(query: EntityMention, pseudoresults: Seq[ScoredDocument], nercontext: Seq[String], nameVariances: Seq[String] = Seq(), addPseudoNers: Boolean = false): Map[String, Double] = {
+  def reweightDocsAddNewWithDocs(query: EntityMention, pseudoresults: Seq[ScoredDocument], nercontext: Seq[String],
+                                 nameVariances: Seq[String] = Seq(), addPseudoNers: Boolean = false
+                                ): Map[String, Double] = {
 
     if (pseudoresults.length > 0) {
 
@@ -174,7 +184,8 @@ class NeighborhoodReweighter {
       // get results as TacELQueries -- Why!?! --> just so we can reuse our NLP doc processing. This need to be fixed!
       val pseudoQueries_score = new ListBuffer[(EntityMention, Double)]()
       for (r <- pseudoresults; if r.documentName != query.docId) {
-        val pq = new SimpleEntityMention(docId = r.documentName, entityType = "UNK", mentionId = r.documentName, entityName = query.entityName, fullText = "")
+        val pq = new SimpleEntityMention(docId = r.documentName, entityType = "UNK", mentionId = r.documentName,
+                                         entityName = query.entityName, fullText = "")
         println("PSEUDORESULT\t" + query.mentionId + "\t" + r.documentName + "\t" + r.score)
         pseudoQueries_score += Pair(pq, r.score)
       }
@@ -248,22 +259,25 @@ class NeighborhoodReweighter {
 
 
   def pseudoKbSearcher: GalagoRetrieval = {
-    new GalagoRetrieval(jsonConfigFile = ConfInfo.sourceGalagoJsonParameterFile, galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv)
+    new GalagoRetrieval(jsonConfigFile = ConfInfo.galagoDefaultJsonParameterFile,
+                        galagoUseLocalIndex = ConfInfo.galagoUseLocalIndex, galagoSrv = ConfInfo.galagoKbSrv)
   }
 
-//  def getNormSentences(query: EntityMention): Seq[String] = {
-//    val nlpSentences: Seq[String] = NlpReader.allSentences(query)
-//
-//    val normSentences =
-//      if (!nlpSentences.isEmpty) {
-//        nlpSentences.map(TextNormalizer.normalizeText(_))
-//      } else {
-//        PoorMansNlpExtractor.splitSentences(query.fullText).map(sent => TextNormalizer.normalizeText(sent))
-//      }
-//    normSentences
-//  }
+  //  def getNormSentences(query: EntityMention): Seq[String] = {
+  //    val nlpSentences: Seq[String] = NlpReader.allSentences(query)
+  //
+  //    val normSentences =
+  //      if (!nlpSentences.isEmpty) {
+  //        nlpSentences.map(TextNormalizer.normalizeText(_))
+  //      } else {
+  //        PoorMansNlpExtractor.splitSentences(query.fullText).map(sent => TextNormalizer.normalizeText(sent))
+  //      }
+  //    normSentences
+  //  }
 
-  def sentenceFilterNers(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String], normSentences: Seq[String]): Seq[String] = {
+  def sentenceFilterNers(query: EntityMention, nercontext: Seq[String], nameVariances: Seq[String],
+                         normSentences: Seq[String]
+                        ): Seq[String] = {
 
     val queryFilter = sentenceOfQuery(query, nameVariances) _
 
