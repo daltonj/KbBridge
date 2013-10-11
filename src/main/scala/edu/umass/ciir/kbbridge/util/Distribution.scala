@@ -105,6 +105,10 @@ trait CategoricalCompressedDistribution[Elem] {
     }
   }
 
+  def mean: Double = {
+    1.0 * nonzeroDistr.map(_._2).sum / nonzeroDistr.length
+  }
+
   def marginal: Double = {
     assert(!isLog)
     assert(nonzeroDistr.forall(_._2 >= 0) || zeroCountProb > 0.0 && zeroEntries > 0)
