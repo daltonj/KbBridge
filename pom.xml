@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.umass.ciir</groupId>
     <artifactId>kbbridge</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <inceptionYear>2013</inceptionYear>
     <properties>
         <scala.version>2.10.1</scala.version>
