@@ -5,13 +5,14 @@ import org.lemurproject.galago.core.retrieval.query.{AnnotatedNode, StructuredQu
 import org.lemurproject.galago.tupleflow.{FakeParameters, Parameters}
 import org.lemurproject.galago.core.parse.{TagTokenizer, Document}
 import scala.collection.JavaConversions._
-import org.lemurproject.galago.core.retrieval.{RetrievalFactory, ScoredPassage, ScoredDocument}
-import org.lemurproject.galago.core.scoring.WeightedTerm
+import org.lemurproject.galago.core.retrieval.{LocalRetrieval, RetrievalFactory, ScoredPassage, ScoredDocument}
+import org.lemurproject.galago.core.retrieval.prf.WeightedTerm
 import scala._
 import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
-import org.lemurproject.galago.core.index.AggregateReader.NodeStatistics
+import org.lemurproject.galago.core.index.stats.NodeStatistics
 import java.util.concurrent.TimeUnit
 import edu.umass.ciir.kbbridge.data.{GalagoBridgeDocumentWrapper, GalagoBridgeDocument, DocumentProvider}
+import org.lemurproject.galago.core.parse.Document.DocumentComponents
 
 /**
  * User: dietz
@@ -30,6 +31,16 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
         getStatistics(key)
       }
     })
+
+//  val documentCache: LoadingCache[(String, Parameters), Document] = CacheBuilder.newBuilder()
+//    .maximumSize(100)
+//    .expireAfterWrite(10, TimeUnit.MINUTES)
+//    .build(
+//    new CacheLoader[(String, Parameters), Document]() {
+//      def load(key: (String,Parameters)): Document = {
+//        pullDocument(key._1, key._2)
+//      }
+//    })
 
   val globalParameters = Parameters.parse(new File(jsonConfigFile))
 
@@ -58,7 +69,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
       p.set("tags", true)
       try {
         m_searcher synchronized {
-          val docmap = m_searcher.getDocuments(identifier, p)
+          val docmap = m_searcher.getDocuments(identifier, new DocumentComponents(p))
           docmap.toMap
         }
       } catch {
@@ -69,7 +80,15 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
       }
     }
 
-  def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
+//  def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
+//    val p = new Parameters()
+//    p.copyFrom(globalParameters)
+//    params match {case Some(param) => p.copyFrom(param); case _ => {}}
+//
+//    documentCache.get(Pair(identifier, p))
+//  }
+
+    def getDocument(identifier:String,  params:Option[Parameters] = None): Document = {
     val p = new Parameters()
     p.copyFrom(globalParameters)
     params match {case Some(param) => p.copyFrom(param); case _ => {}}
@@ -77,7 +96,7 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
     p.set("tags", true)
     try {
       m_searcher synchronized {
-        val doc = m_searcher.getDocument(identifier, p)
+        val doc = m_searcher.getDocument(identifier, new DocumentComponents(p))
         if(doc == null) throw new BridgeDocumentNotFoundException(identifier)
         doc
       }
@@ -214,6 +233,14 @@ class GalagoRetrieval(jsonConfigFile: String, galagoUseLocalIndex: Boolean, gala
   }
 
   def close() {
+  }
+
+  def collectionStatistics() = {
+    val retrieval = m_searcher.asInstanceOf[LocalRetrieval]
+    val stats = retrieval.getIndexPartStatistics("postings")
+    val collLength = stats.collectionLength
+    val numDocs = stats.highestDocumentCount
+    (collLength, numDocs)
   }
 }
 

@@ -28,12 +28,12 @@ object EntityReprRetrieval {
     fullQuery
   }
 
-  def buildRawQuery(entity: EntityRepr,entityRetrievalWeighting:EntityRetrievalWeighting): String = {
-    val queryQ = GalagoQueryLib.buildSeqDepForString(entity.entityName)
+  def buildRawQuery(entity: EntityRepr,entityRetrievalWeighting:EntityRetrievalWeighting, filterStopWords:Boolean=false, minTokenLen :Int=1): String = {
+    val queryQ = GalagoQueryLib.buildSeqDepForString(entity.entityName, Seq())
     val queryNV = {
       val innerQueries =
         for ((nv, weight) <- entity.nameVariants.toSeq) yield {
-          GalagoQueryLib.buildSeqDepForString(nv) -> weight
+          GalagoQueryLib.buildSeqDepForString(nv, Seq()) -> weight
         }
       GalagoQueryLib.buildWeightedCombine(innerQueries)
     }

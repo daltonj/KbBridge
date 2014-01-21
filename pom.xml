@@ -41,6 +41,19 @@
 
 <dependencies>
 
+<!--   <dependency>
+            <groupId>cc.factorie.app.nlp</groupId>
+            <artifactId>factorie-nlp-resources</artifactId>
+            <version>0.1-SNAPSHOT</version>
+   </dependency>
+
+ <dependency>
+   <groupId>cc.factorie</groupId>
+    <artifactId>factorie</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    </dependency>
+-->
+
 <dependency>
 	<groupId>org.slf4j</groupId>
 	<artifactId>slf4j-api</artifactId>
@@ -88,7 +101,7 @@
          <dependency>
            <groupId>edu.umass.ciir</groupId>
            <artifactId>ciirshared</artifactId>
-           <version>s2.10.1-g3.4-1.0</version>
+           <version>s2.10.2-g3.5-1.0-SNAPSHOT</version>
          </dependency>
 
        <dependency>
@@ -128,13 +141,13 @@
         <dependency>
             <groupId>org.lemurproject.galago</groupId>
             <artifactId>core</artifactId>
-            <version>3.4</version>
+            <version>3.5</version>
         </dependency>
 
         <dependency>
             <groupId>org.lemurproject.galago</groupId>
             <artifactId>tupleflow</artifactId>
-            <version>3.4</version>
+            <version>3.5</version>
         </dependency>
 
 	<dependency>

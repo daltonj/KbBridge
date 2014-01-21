@@ -21,7 +21,7 @@ object RunFileLoader {
       if (data.length != 6) {
         throw new Exception("Wrong number of fields in line!" + line)
       }
-      val doc = QueryDocument("%03d".format(data(0).toInt) , data(2), data(3).toInt, data(4).toDouble, runFile.getName())
+      val doc = QueryDocument(data(0), data(2), data(3).toInt, data(4).toDouble, runFile.getName())
       doc.source = doc.contextSource
       runResults += doc
     }

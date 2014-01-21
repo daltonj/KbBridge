@@ -6,18 +6,25 @@ import scala.collection.mutable.HashSet
 import edu.umass.ciir.kbbridge.data.EntityMention
 import edu.umass.ciir.models.StopWordList
 import edu.umass.ciir.kbbridge.nlp.NlpData.NlpXmlMention
+import edu.umass.ciir.kbbridge.util.NameDictionary
 
 case class QueryContext(altNames: Seq[String], contextNers: Seq[String], allNersSorted:Seq[String], sentencesForMention:Seq[String]=Seq())
-  
+
+
+
 class NaiveQueryContextBuilder {
-  
+
+
+
+
+
   def buildContext(query: EntityMention) : QueryContext = {
 
      var contexts = new HashSet[String]() 
     if (query.entityName.length > 0) {
     try {
 //     var nlpFile = NlpExtractor.getOrQueueNlp(() => {mention.fullText}, mention.docId, mention.source)
-     var neighbors = query.nerNeighbors.map(n => n.text)
+     var neighbors = query.nerNeighbors.map(n => n.text).filterNot(ner => NameDictionary.DAY_MONTH_NAMES contains TextNormalizer.normalizeText(ner) ).filterNot(ner => ner.startsWith("http") || ner.length < 2)
 
       contexts = extractNameVariantsComponents(query.entityName, neighbors, true)
       //println("all coref: " + query.queryId + ": " + mention.name + ":" + mTexts.mkString("\t"))
@@ -25,14 +32,13 @@ class NaiveQueryContextBuilder {
        case _ => println("Error getting NLP data for mention " + query.toString())
     }
    
-//    var fullTextSeq = new ListBuffer[String]
-//    fullTextSeq += query.fullText
+//    val fullTextSeq = Seq(query.fullText)
 //    val fullTextVariants = extractNameVariantsComponents(query.entityName, fullTextSeq, true)
-//
-//    //println("coref name variants: " + query.queryId + ": "+  mention.name + ":" + contexts.mkString("\t"))
-//    //println("text name variants: " + query.queryId + ": "+  mention.name + ":" + fullTextVariants.mkString("\t"))
-//
-//    contexts ++= fullTextVariants
+
+    //println("coref name variants: " + query.queryId + ": "+  mention.name + ":" + contexts.mkString("\t"))
+    //println("text name variants: " + query.queryId + ": "+  mention.name + ":" + fullTextVariants.mkString("\t"))
+
+  //  contexts ++= fullTextVariants
     }
     new QueryContext(contexts.toSeq, Seq(), Seq())
    
@@ -108,7 +114,7 @@ class NaiveQueryContextBuilder {
           }
         }
         
-        var idx = sb.toString().toLowerCase().indexOf(TextNormalizer.normalizeText(query))
+        val idx = sb.toString().toLowerCase().indexOf(TextNormalizer.normalizeText(query))
         if (idx > -1) {
             var numNonWords = 0
             var curIdx = idx
@@ -126,13 +132,21 @@ class NaiveQueryContextBuilder {
         }
       }
       
-      var normalizedQuery = TextNormalizer.normalizeText(query)
-      var matchingSequences = sequences.filter(seq => {
-        var normalizedString = TextNormalizer.normalizeText(seq.mkString(" ")) 
-        (normalizedString contains normalizedQuery) && (!normalizedString.equals(normalizedQuery))
-      })
-      
-      
+      val normalizedQuery = TextNormalizer.normalizeText(query)
+      val matchingSequences =
+       if (normalizedQuery.length > 3) {
+         sequences.filter(seq => {
+           val normalizedString = TextNormalizer.normalizeText(seq.mkString(" "))
+           (normalizedString contains normalizedQuery) && (!normalizedString.equals(normalizedQuery))  })
+       } else {
+         Seq()
+       }
+
+        val symbolsToNothing = query.toLowerCase().replaceAll("[^a-z01-9 ]", "")
+        if (!(symbolsToNothing equals normalizedQuery)) {
+          contextTerms += symbolsToNothing
+        }
+
       // now we have all the matching capitalized sequences (and possible acronyms)
       var normalized = matchingSequences.map(seq => seq.mkString(" "))
       contextTerms ++= normalized

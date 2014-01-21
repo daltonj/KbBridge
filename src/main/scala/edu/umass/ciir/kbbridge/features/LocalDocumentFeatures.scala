@@ -10,6 +10,7 @@ import edu.umass.ciir.kbbridge.nlp.{TextNormalizer}
 import edu.umass.ciir.kbbridge.util.{WikiLinkExtractor}
 import edu.umass.ciir.kbbridge.data.{DocumentProvider, SimpleEntityMention, EntityMention, WikipediaEntity}
 import edu.umass.ciir.kbbridge.text2kb.{GalagoDoc2WikipediaEntity}
+import org.lemurproject.galago.core.retrieval.LocalRetrieval
 
 trait LocalDocumentFeatures extends FeatureGenerator {
 
@@ -26,6 +27,10 @@ trait LocalDocumentFeatures extends FeatureGenerator {
   val nerJaccard = "nerJaccard"
 
   val searcher = DocumentProvider
+
+
+  val (collLength, numDocs) = DocumentBridgeMap.getKbRetrieval.collectionStatistics()
+  //println("coll freq: " + collLength + " num docs " + numDocs)
 
   def contextSimFeatures(mContext: String, eContext: String, contextType: String) {
     val textSimFeatures = LanguageModelFeatures.computeLmSimilarity(mContext, eContext, true);
@@ -50,7 +55,10 @@ trait LocalDocumentFeatures extends FeatureGenerator {
     entityTextLm.addDocument(galagoEntityDoc, false)
 
     val backgroundLm = new LanguageModel(1)
-    backgroundLm.setCollectionFrequency(6060567681L);
+
+
+
+    backgroundLm.setCollectionFrequency(collLength)
 
     var modelScorer = new KLDivergenceSimilarity(backgroundLm, 1000)
     var klDivergenceScore = modelScorer.calculateSimilarity(mentionEntityLm, entityTextLm, false).getSimilarity()

@@ -90,12 +90,7 @@ class NlpQueryContextBuilder {
 
   def allNers(query: EntityMention): scala.Seq[(String, NlpXmlMention)] = {
     val fullners = query.nerNeighbors
-    for (mention <- fullners if (
-      (mention.text.length > 2) &&
-        !mention.text.toLowerCase.startsWith("http") &&
-        mention.tokens.exists((tok => tok.pos.toLowerCase.startsWith("nn") || tok.pos == ("?"))) // ? is from poor mans ner
-      )
-    ) yield {
+    for (mention <- fullners) yield {
       (mention.ner, mention)
     }
     //
@@ -200,9 +195,8 @@ class NlpQueryContextBuilder {
       ).toSet
     val nersNotForMention: Seq[(String, NlpXmlMention)] = ners.filter(nm => !nersForMention.contains(nm._2))
 
-    val nerContextTypes = Set("ORGANIZATION", "PERSON", "LOCATION", "UNK", "?")
     val nersInSentence =
-      for ((ner, mention) <- nersNotForMention; if (sentenceSet.contains(mention.sentenceId) && (nerContextTypes contains ner)))
+      for ((ner, mention) <- nersNotForMention; if (sentenceSet.contains(mention.sentenceId)))
       yield mention
 
 //    val sentencesForMention = {

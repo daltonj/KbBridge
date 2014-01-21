@@ -14,6 +14,7 @@ import TacMetricsCalculator.LinkerQueryPrediction
 import edu.umass.ciir.kbbridge.data.{ScoredWikipediaEntity, TacEntityMention, IdMap}
 import edu.umass.ciir.kbbridge.nil.{NilClusterer, NilPredictorAndClassifierMain}
 import edu.umass.ciir.kbbridge.features.FileFeatureLoader
+import edu.umass.ciir.kbbridge.util.ConfInfo
 
 object TACEntityLinkerMain {
 
@@ -99,7 +100,7 @@ object TACEntityLinkerMain {
 
     if (trainSet) {
       val trainingQueries = TacQueryUtil.selectEvenOddSplitQueries._1
-      val trainingInstances = FileFeatureLoader.loadProtobufDataForQueries(trainingQueries)
+      val trainingInstances = FileFeatureLoader.loadProtobufDataForQueries(trainingQueries, ConfInfo.serializedFeaturePath)
       //     val rerankedResults = RankLibReranker.rerank(trainingInstances, useTacOnly, ltrModelFile, retrievalFeatureWeights, featureSet)
       //     writeTACResults(trainingQueries, rerankedResults, "./eval/tac_train1", outputEvalDir)
     }
@@ -131,7 +132,7 @@ object TACEntityLinkerMain {
         val resultsSummary = HashMap[String, Map[String, ListBuffer[Double]]]()
         tacOutputYearDir.mkdir()
 
-        val testInstances = FileFeatureLoader.loadProtobufDataForQueries(testQueries)
+        val testInstances = FileFeatureLoader.loadProtobufDataForQueries(testQueries, ConfInfo.serializedFeaturePath)
 
         ltrModels.map(model => {
           val supervisedResults = reranker.rerankMentionBatchWithFeatures(testInstances)

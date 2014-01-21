@@ -11,6 +11,7 @@ import scala.Some
 import edu.umass.ciir.kbbridge.data.TacEntityMention
 import edu.umass.ciir.kbbridge.eval.TacMetricsCalculator.LinkerQueryPrediction
 import edu.umass.ciir.util.TextNormalizer
+import scala.collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,11 +32,17 @@ object TacFullyLinkedEval extends App {
   val rawDir = new File(tacOutputDir)
   (rawDir.mkdirs())
 
+  var maxScore = Double.NegativeInfinity
+  var minScore = Double.PositiveInfinity
+
   eval()
+
+
+
 
   def eval() {
     val querySet = TacQueryUtil.allQueries
-    val queriesByYear = TacQueryUtil.queriesByYear
+    val queriesByYear = TacQueryUtil.queriesByYear.filter(_._1 equals "2013")
     println("query stats:")
     println("total queries: " + querySet.size)
     val nonNil =  querySet.filterNot(q => q.isNilQuery)
@@ -43,37 +50,51 @@ object TacFullyLinkedEval extends App {
     val summaryWriter = new PrintWriter(outputEvalDir + "/summary")
 
     for ((year, (annoFile, queries)) <- queriesByYear) {
-      TacLinkingEvaluator.clearJudgments()
-      TacLinkingEvaluator.loadGoldStandardFile(annoFile)
-      println("Results for : " + year)
       val testQueries = queries.filter(q => querySet contains q)
-      println("queries: " + testQueries.size)
-      val nonNil =  testQueries.filterNot(q => q.isNilQuery)
-      println("test non-nil queries: " + nonNil.size)
 
+      if (!year.equals("2013")) {
+        TacLinkingEvaluator.clearJudgments()
+        TacLinkingEvaluator.loadGoldStandardFile(annoFile)
+
+        println("Results for : " + year)
+        println("queries: " + testQueries.size)
+        val nonNil = testQueries.filterNot(q => q.isNilQuery)
+        println("test non-nil queries: " + nonNil.size)
+      }
       var numNonMatches = 0
+      val rawRanking = mutable.HashMap[String, LinkedMention]()
       val links = for (q <- testQueries) yield {
         val doc = q.docId
-        val file = new File(args(0) + File.separatorChar + doc + ".xml")
+        val file = new File(args(0) + File.separatorChar + q.mentionId + ".xml")
         if (file.exists()) {
-          //val links = entityLinks(doc, file)
-          val links = docMentions(doc, file)
+          val links = entityLinks(doc, file, 500)
+          //val links = docMentions(doc, file)
           var matchingLinks = links.filter(links => TextNormalizer.normalizeText(links.mention.entityName) equals TextNormalizer.normalizeText(q.entityName))
 
-         // println("q: " + q.mentionId + " num exact matches: " + matchingLinks.size)
-          if (matchingLinks.size == 0) {
-         //   matchingLinks = links.filter(links => TextNormalizer.normalizeText(links.mention.entityName) contains TextNormalizer.normalizeText(q.entityName.toLowerCase()))
-          //  println("q: " + q.mentionId + " num subset matches: " + matchingLinks.size)
+//          println("q: " + q.mentionId + " num exact matches: " + matchingLinks.size)
+      //    if (matchingLinks.size == 0) {
+            matchingLinks ++= links.filter(links => (TextNormalizer.normalizeText(links.mention.entityName.toLowerCase) contains TextNormalizer.normalizeText(q.entityName.toLowerCase())) || (TextNormalizer.normalizeText(q.entityName.toLowerCase()) contains TextNormalizer.normalizeText(links.mention.entityName.toLowerCase())))
+           //println("q: " + q.mentionId + " num subset matches: " + matchingLinks.size)
 
-          }
+      //    }
 
 
           val canonicalMention = if (matchingLinks.size == 0) {
             println("q: " + q + " no matches. ")
-            new LinkedMention(q, Seq())
             numNonMatches += 1
+            new LinkedMention(q, Seq())
           } else {
-            matchingLinks.head
+            resolveMultipleMentions(matchingLinks, q)
+          }
+
+          val raw = rawCandidates(doc, file)
+          val topRaw = raw.entityLinks.headOption
+          if (topRaw != None) {
+            val scoreMap = canonicalMention.entityLinks.map(e=> e.wikipediaTitle -> e.score).toMap
+            val score = scoreMap(topRaw.get.wikipediaTitle)
+            rawRanking += q.mentionId -> new LinkedMention(q, Seq(new ScoredWikipediaEntity(topRaw.get.wikipediaTitle, -1, score , topRaw.get.rank)))
+          } else {
+            rawRanking += q.mentionId -> new LinkedMention(q, Seq())
           }
           q.mentionId -> canonicalMention
         } else {
@@ -83,12 +104,45 @@ object TacFullyLinkedEval extends App {
       }
       println("num non-matches " + numNonMatches + " " + (numNonMatches.toDouble / testQueries.size) )
       val linksByMention = links.toMap
-     // writeTACResults(testQueries, linksByMention, tacOutputDir + "/" + year, outputEvalDir + "/" + year)
+      val dir = new File(tacOutputDir + "/" + year)
+      dir.mkdirs()
+      writeTACResults(testQueries, linksByMention, tacOutputDir + "/" + year + "/", outputEvalDir +  File.separator + year)
+      //writeTACResults(testQueries, rawRanking.toMap, tacOutputDir + "/" + year + "/", outputEvalDir +  File.separator + year)
+
     }
 
   }
 
   case class LinkedMention(mention: EntityMention, entityLinks: Seq[ScoredWikipediaEntity])
+
+
+  def resolveMultipleMentions(matchingLinks: Seq[LinkedMention], originalMention:TacEntityMention): LinkedMention = {
+    var bestMention = matchingLinks.head
+    if (matchingLinks.size > 1) {
+   // println("Resolving multiple matches: " + originalMention)
+    var curBestScore = Double.NegativeInfinity
+    for (matchingMention <- matchingLinks) {
+      val topLink = bestMention.entityLinks.headOption
+      topLink match {
+        case Some(link) => {
+          val topCand = bestMention.entityLinks.head
+          if (link.score > curBestScore) {
+            bestMention = matchingMention
+            curBestScore = topCand.score
+          //  println(topCand.wikipediaTitle + " " + topCand.score)
+          }
+
+        }
+        case _ => {
+          println("No top candidate for mention: " + matchingMention.mention.entityName)
+        }
+      }
+    }
+      //println(originalMention.mentionId + " " + originalMention.entityName + " " + bestMention.mention.entityName.trim() + " "  + curBestScore)
+    }
+
+    bestMention
+  }
 
   def docMentions(docId: String, file: File, candidateLimit: Int = 50) = {
     val entityLinks = XML.loadFile(file) \\ "mention"
@@ -111,13 +165,38 @@ object TacFullyLinkedEval extends App {
        // println(c)
         val id = (c \ "id").text.trim
         val score = (c \ "score").text.trim.toDouble
+        if (score > maxScore) {
+          maxScore = score
+        }
+        if (score < minScore) {
+          minScore = score
+        }
+        val rank =  (c \ "rank").text.trim.toInt
+        new ScoredWikipediaEntity(id, -1,score , rank)
+      }
+
+      val linkedMention = LinkedMention(mention, candidateEntities)
+      // println(linkedMention)
+      linkedMention
+    }
+  }
+
+
+  def rawCandidates(docId: String, file: File, candidateLimit: Int = 50) = {
+    val mention = new SimpleEntityMention(docId, "", "dummy", "dummy", "")
+
+    val candidates = XML.loadFile(file) \\ "rawcandidate"
+      val candidateEntities = for (c <- candidates) yield {
+        // println(c)
+        val id = (c \ "id").text.trim
+        val score = (c \ "score").text.trim.toDouble
         val rank =  (c \ "rank").text.trim.toInt
         new ScoredWikipediaEntity(id, -1,score , rank)
       }
       val linkedMention = LinkedMention(mention, candidateEntities)
       // println(linkedMention)
       linkedMention
-    }
+
   }
 
 
@@ -187,12 +266,13 @@ object TacFullyLinkedEval extends App {
 
     val wikiNilPredictions = NilPredictorAndClassifierMain.wikiOnly(finalResults)
 
-
-    val thresholds = Array(-1000000, -1000, -1, -0.5, 0, 0.5)
+    println("SCORE RANGE:" + minScore + " " + maxScore)
+    val thresholds = Array(0.5, 1, 2.5, 3, 3.5)
     for (threshold <- thresholds) {
+      println("Threshold:" + threshold)
       val nilPredictions = NilPredictorAndClassifierMain.predictNils(finalResults, threshold)
       val clustered = NilClusterer.clusterNils(nilPredictions)
-      TacPredictionWriter.writePredicted(clustered, tacOutputDirPrefix + "." + -threshold)
+      TacPredictionWriter.writePredicted(clustered, tacOutputDirPrefix + threshold, maxScore, minScore)
       TacMetricsCalculator.evaluateMicroAverageAccuracy(nilPredictions, outputFilePrefix + "_" + threshold)
 
     }

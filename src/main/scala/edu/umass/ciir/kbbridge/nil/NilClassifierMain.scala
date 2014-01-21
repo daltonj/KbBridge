@@ -108,7 +108,11 @@ object NilPredictorAndClassifierMain {
       }
 
       if (tacId(0) equals "NIL") {
+        if (p.score < scoreThreshold) {
+          nilPredictions += new LinkerQueryPrediction(p.query, None, None, p.score)
+        } else {
         nilPredictions += new LinkerQueryPrediction(p.query, None, p.wikiTitle, p.score)
+        }
       } else {
         nilPredictions += new LinkerQueryPrediction(p.query, Some(tacId), p.wikiTitle, p.score)
       }

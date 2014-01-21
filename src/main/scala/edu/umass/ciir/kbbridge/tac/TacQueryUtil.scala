@@ -25,6 +25,9 @@ object TacQueryUtil {
   val query2012EvalFile = ConfInfo.el2012QueryFile
   val anno2012EvalFile = ConfInfo.el2012AnnoFile
 
+  val query2013EvalFile = ConfInfo.el2013QueryFile
+  val anno2013EvalFile = ConfInfo.el2013AnnoFile
+
   def queriesByYear(): Map[String, (String, Seq[TacEntityMention])] = {
     val queriesByYear = new mutable.HashMap[String, (String, Seq[TacEntityMention])]()
     queriesByYear += ("2009" ->(ConfInfo.el2009AnnoFile, TacQueryLoader.loadQueries(query2009TrainFile, anno2009TrainFile)))
@@ -32,13 +35,15 @@ object TacQueryUtil {
     queriesByYear += ("2010eval" ->(ConfInfo.el2010evalAnnoFile, TacQueryLoader.loadQueries(query2010EvalFile, anno2010EvalFile)))
     queriesByYear += ("2011" ->(ConfInfo.el2011AnnoFile, TacQueryLoader.loadQueries(query2011EvalFile, anno2011EvalFile)))
     queriesByYear += ("2012" ->(ConfInfo.el2012AnnoFile, TacQueryLoader.loadQueries(query2012EvalFile, anno2012EvalFile)))
+    queriesByYear += ("2013" ->(ConfInfo.el2013AnnoFile, TacQueryLoader.loadQueries(query2013EvalFile, anno2013EvalFile)))
+
     queriesByYear.toMap
 
   }
 
   def selectNonNilEvenOddSplitQueries(): (Seq[TacEntityMention], Seq[TacEntityMention]) = {
 
-    var targetQueries = allQueries
+    var targetQueries = non2013Queries
     println("total queries:" + targetQueries.size)
     val nonNil = targetQueries.filterNot(_.isNilQuery)
     println("NonNil: " + nonNil.size)
@@ -64,7 +69,7 @@ object TacQueryUtil {
 
   def selectEvenOddSplitQueries(): (Seq[TacEntityMention], Seq[TacEntityMention]) = {
 
-    var targetQueries = allQueries()
+    var targetQueries = non2013Queries()
     println("total queries:" + targetQueries.size)
 
     val trainSplit = targetQueries.filterNot(q => (q.mentionId.replace("EL", "").replace("_", "").replace("ENG", "").toInt % 2) == 0)
@@ -84,13 +89,31 @@ object TacQueryUtil {
 
   }
 
+  def non2013Queries(): Seq[TacEntityMention] = {
+    TacQueryLoader.loadQueries(query2009TrainFile, anno2009TrainFile) ++
+      TacQueryLoader.loadQueries(query2010TrainFile, anno2010TrainFile) ++
+      TacQueryLoader.loadQueries(query2010EvalFile, anno2010EvalFile) ++
+      TacQueryLoader.loadQueries(query2011EvalFile, anno2011EvalFile) ++
+      TacQueryLoader.loadQueries(query2012EvalFile, anno2012EvalFile)  //++
+   //   TacQueryLoader.loadQueries(query2013EvalFile, anno2013EvalFile)
+  }
+
+  def non2009Queries(): Seq[TacEntityMention] = {
+    // TacQueryLoader.loadQueries(query2009TrainFile, anno2009TrainFile) ++
+   // TacQueryLoader.loadQueries(query2010TrainFile, anno2010TrainFile) ++
+   //   TacQueryLoader.loadQueries(query2010EvalFile, anno2010EvalFile) ++
+  //    TacQueryLoader.loadQueries(query2011EvalFile, anno2011EvalFile) ++
+  //    TacQueryLoader.loadQueries(query2012EvalFile, anno2012EvalFile)  //++
+    TacQueryLoader.loadQueries(query2013EvalFile, anno2013EvalFile)
+  }
 
   def allQueries(): Seq[TacEntityMention] = {
     TacQueryLoader.loadQueries(query2009TrainFile, anno2009TrainFile) ++
       TacQueryLoader.loadQueries(query2010TrainFile, anno2010TrainFile) ++
       TacQueryLoader.loadQueries(query2010EvalFile, anno2010EvalFile) ++
       TacQueryLoader.loadQueries(query2011EvalFile, anno2011EvalFile) ++
-      TacQueryLoader.loadQueries(query2012EvalFile, anno2012EvalFile)
+      TacQueryLoader.loadQueries(query2012EvalFile, anno2012EvalFile)  ++
+      TacQueryLoader.loadQueries(query2013EvalFile, anno2013EvalFile)
   }
 
   def candidateContainsTruth(mention: TacEntityMention, candidates: Seq[WikipediaEntity]): Boolean = {

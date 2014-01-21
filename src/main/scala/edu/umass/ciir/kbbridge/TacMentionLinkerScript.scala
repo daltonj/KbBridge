@@ -2,25 +2,26 @@ package edu.umass.ciir.kbbridge
 
 import java.io.{PrintWriter, File}
 import edu.umass.ciir.kbbridge.tac.TacQueryUtil
-import scala.collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
  * User: jdalton
  * Date: 7/22/13
  * Time: 1:27 PM
- * To change this template use File | Settings | File Templates.
  */
-object LinkerScript extends App {
+object TacMentionLinkerScript extends App {
 
-  val allqueries = TacQueryUtil.queriesByYear
-  val queries2013 = allqueries("2013")._2
-  val docSet = queries2013.map(q => q.docId).toSet
-  println("queries: " + queries2013.size + " docs: " + docSet.size)
-  writeAnnotationScript(docSet)
+  val allqueries = TacQueryUtil.queriesByYear()("2012")._2
+  //val queries2013 = allqueries("2009")._2 ++ allqueries("2010eval")._2 ++ allqueries("2011")._2 ++ allqueries("2012")._2++ allqueries("2013")._2
+  //val queries2013 = (allqueries.map(_._2)).flatten
+  val querySet = allqueries.map(q => q.mentionId).toSet
+  val docSet = allqueries.map(q => q.docId).toSet
+
+  println("queries: " + querySet.size + " docs: " + docSet.size)
+  writeAnnotationScript(querySet)
 
   def writeAnnotationScript(docsRequiringAnnotation: Iterable[String]) = {
-    val outputFile = new File("./scripts/annotate-tac2013-swarm-factkb1")
+    val outputFile = new File("./scripts/annotate-singleMentions-2012-qvm_local")
     val n = 100000
     var curBatch = 0
     var p = new PrintWriter(outputFile.getAbsolutePath() + curBatch.toString + ".sh", "UTF-8")
@@ -37,13 +38,13 @@ object LinkerScript extends App {
       sb append " -e ./err/"
       sb append docSet.head
 
-      sb append " ./scripts/runAnnotation.sh "
+      sb append " java -server -Xmx6G -Dfile.encoding=utf-8 -cp /work1/allan/jdalton/factorie-kbbridge-plugin/target/factorie-kbbridge-1.0-SNAPSHOT-jar-with-dependencies.jar cc.factorie.app.nlp.el.TacLinkingMain "
       //  sb append " /work1/allan/jdalton/tacco/scripts/runEntityLinker.sh "
 
       // input query
       sb append docSet.mkString(",")
       sb append " /work1/allan/jdalton/entity-linking/tac-source2013-g34"
-      sb append " ./tac-nlp-annotations-2013-factkb1"
+      sb append " ./tac-singleMention-annotations-2012-qvm_local"
 
       // println(sb.toString)
       p.println(sb.toString)

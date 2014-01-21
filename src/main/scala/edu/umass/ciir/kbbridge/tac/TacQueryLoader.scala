@@ -3,6 +3,7 @@ package edu.umass.ciir.kbbridge.tac
 import collection.mutable.ListBuffer
 import collection.mutable
 import edu.umass.ciir.kbbridge.data.{IdMap, TacEntityMention}
+import java.io.File
 
 /**
  * User: jdalton
@@ -11,16 +12,19 @@ import edu.umass.ciir.kbbridge.data.{IdMap, TacEntityMention}
 object TacQueryLoader {
 
   def loadQueries(queryFile: String, annoFile: String): Seq[TacEntityMention] = {
-    //println("TacQueryLoader: load Query "+annoFile+"  "+queryFile)
+    println("TacQueryLoader: load Query "+annoFile+"  "+queryFile)
     val queries = ListBuffer[TacEntityMention]()
 
     val queryIdToEnttType = new mutable.HashMap[String, String]()
     val queryIdToNodeId = new mutable.HashMap[String, String]()
-    println("reading annotation file: " + annoFile)
-    for (line <- io.Source.fromFile(annoFile).getLines()) {
-      val chunks = line.split("\t")
-      queryIdToEnttType += (chunks(0) -> chunks(2))
-      queryIdToNodeId += (chunks(0) -> chunks(1))
+
+    if (annoFile != null && new File(annoFile).exists()) {
+      //println("reading annotation file: " + annoFile)
+      for (line <- io.Source.fromFile(annoFile).getLines()) {
+        val chunks = line.split("\t")
+        queryIdToEnttType += (chunks(0) -> chunks(2))
+        queryIdToNodeId += (chunks(0) -> chunks(1))
+      }
     }
 
 

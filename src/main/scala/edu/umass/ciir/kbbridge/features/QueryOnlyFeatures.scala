@@ -122,8 +122,8 @@ trait QueryOnlyFeatureGenerator extends FeatureGenerator {
 
   def fieldTokenMap(galagoEnitityDoc: Document) = {
     val fieldsToCount = Set("stanf_anchor", "anchor", "title", "redirect", "fbname")
-    val terms = galagoEnitityDoc.terms;
-    val fields = galagoEnitityDoc.tags;
+    val terms = galagoEnitityDoc.terms
+    val fields = galagoEnitityDoc.tags
     val tokenMap = scala.collection.mutable.HashMap[String, ListBuffer[String]]()
     for (f <- fields) {
       if (fieldsToCount contains f.name) {

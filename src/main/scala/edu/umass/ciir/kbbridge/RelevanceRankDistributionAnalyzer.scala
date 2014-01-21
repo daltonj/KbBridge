@@ -5,9 +5,9 @@ import scala.collection.mutable.ListBuffer
 import tac.TacQueryUtil
 import scala.collection.JavaConversions._
 
-object CandidateRelevanceDistributionAnalyzer {
+object CandidateRelevanceDistributionAnalyzer extends App {
 
-  def analyze() {
+
     // val trainingQueries = SimpleRankUtil.selectTrainingQueries
     // val testQueries = SimpleRankUtil.select2012TestQueries
     val allQueries = TacQueryUtil.allQueries() //.get("2012").get._2
@@ -17,7 +17,7 @@ object CandidateRelevanceDistributionAnalyzer {
     var filteredQueries = allQueries.filterNot(_.isNilQuery)
     println("Non-Nil queries: " + filteredQueries.size)
 
-    val mentionFeatures = FileFeatureLoader.loadProtobufDataForQueries(filteredQueries)
+    val mentionFeatures = FileFeatureLoader.loadProtobufDataForQueries(filteredQueries, args(0))
 
     var numFound = 0;
     for (mention <- mentionFeatures) {
@@ -51,9 +51,5 @@ object CandidateRelevanceDistributionAnalyzer {
     for (i <- -1 to 100) {
       println(i + " " + counts.getOrElse(i,0))
     }
-  }
 
-  def main(args: Array[String]) {
-    CandidateRelevanceDistributionAnalyzer.analyze
-  }
 }

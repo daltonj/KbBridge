@@ -8,7 +8,7 @@ object LanguageModelFeatures {
   val defaultSmoothingValue = 2000
 
   def computeIdf(df:Long):Double = {
-    val documentCount = 3811076 //searcher.numDocumentsInCollection
+    val documentCount = 3507696 //searcher.numDocumentsInCollection
     //println("LMFEATURE:" + documentCount)
   //  println("LMFEATURE:" +searcher.totalCollectionFrequency)
     Math.log((documentCount - df + 0.5) / (df + 0.5));
@@ -43,7 +43,7 @@ object LanguageModelFeatures {
         backgroundLm.addEntry(new TermEntry(term, frequency, 1))
       }})
       backgroundLm.addDocument(mentionLm)
-      backgroundLm.setCollectionFrequency(6060567681L);
+      backgroundLm.setCollectionFrequency(6060970848L);
       
       backgroundLm.calculateProbabilities()     
 

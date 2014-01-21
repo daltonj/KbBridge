@@ -33,7 +33,7 @@ object TermCountsMap {
   val termFrequencyCountsMap = termFrequencyCounts.result().withDefault(term => (1,1))
   
   def main(args: Array[String]) {
-      val p = new PrintWriter(ConfInfo.galagoTermCounts , "UTF-8")
+      val p = new PrintWriter(args(0) , "UTF-8")
       val map = TermCountsMap.termFrequencyCountsMap
       for (k <- map.keys) {
         val result = map(k)

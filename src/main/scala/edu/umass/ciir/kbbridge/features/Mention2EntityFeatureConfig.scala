@@ -13,7 +13,7 @@ import edu.umass.ciir.kbbridge.features.GalagoEntityLinkingFeatureLib.GalagoEnti
 object Mention2EntityFeatureHasher {
   val prefixSeparator = "."
 
-  def featuresAsMap(featureConfig: Array[String], mention: EntityMention, entity: ScoredWikipediaEntity, otherCands: Seq[ScoredWikipediaEntity]): Map[String, Double] = {
+  def featuresAsMap(featureConfig: Seq[String], mention: EntityMention, entity: ScoredWikipediaEntity, otherCands: Seq[ScoredWikipediaEntity]): Map[String, Double] = {
     val featureMap = scala.collection.mutable.Map[String, Double]()
 
     def addFeatureCall(prefix: String, category: String, value: String) {
@@ -43,10 +43,13 @@ trait Mention2EntityFeatureConfigurator extends Mention2EntityFeatureTrait with 
 
   def localdoc: Boolean
 
+  def e2e: Boolean
+
   lazy val galagoFeatures = new FeatureSetup(addFeature, addValueFeature) with GalagoEntityLinkingFeatures {}
   lazy val queryOnlyFeatures = new FeatureSetup(addFeature, addValueFeature) with QueryOnlyFeatureGenerator {}
   lazy val localDocumentContext = new FeatureSetup(addFeature, addValueFeature) with LocalDocumentFeatures {}
   lazy val nameVariantsFeatures = new FeatureSetup(addFeature, addValueFeature) with NameVariantsFeatures {}
+  lazy val e2eFeatures = new FeatureSetup(addFeature, addValueFeature) with Entity2EntityFeatures {}
 
   //  lazy val wikifierFeatures = new FeatureSetup(addFeature, addValueFeature) with WikifierEntityLinkingFeatures{}
 
@@ -56,6 +59,7 @@ trait Mention2EntityFeatureConfigurator extends Mention2EntityFeatureTrait with 
     if (queryonly) queryOnlyFeatures.generateQueryOnlyFeatures(mention, entity, otherCands)
     if (namevariants) nameVariantsFeatures.documentContextNameVariantFeatures(mention, entity)
     if (localdoc) localDocumentContext.generateDocumentContextFeatures(mention, entity, otherCands)
+    if (e2e) e2eFeatures.entity2entityLinkFeatures(mention, entity)
 
   }
 
@@ -69,7 +73,7 @@ trait Mention2EntityFeatureConfigurator extends Mention2EntityFeatureTrait with 
 }
 
 class Mention2EntityFeatureConfig(
-                                   featureConfig: Array[String]
+                                   featureConfig: Seq[String]
                                    , addFeatureCall: (String, String, String) => Unit
                                    , addFeatureValueCall: (String, String, Double) => Unit
                                    ) extends FeatureSetup(addFeatureCall, addFeatureValueCall) with Mention2EntityFeatureConfigurator {
@@ -77,6 +81,7 @@ class Mention2EntityFeatureConfig(
   val queryonly = featureConfig.contains("queryonly")
   val namevariants = featureConfig.contains("namevar")
   val localdoc = featureConfig.contains("localcontext")
+  val e2e = featureConfig.contains("e2e")
 
 
 }

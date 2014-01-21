@@ -3,6 +3,7 @@ package edu.umass.ciir.kbbridge
 import features.FileFeatureLoader
 import tac.TacQueryUtil
 import scala.collection.JavaConversions._
+import edu.umass.ciir.kbbridge.util.ConfInfo
 
 /**
  * User: jdalton
@@ -14,7 +15,7 @@ object TestExplorations extends App {
 
   val filtered = queries.filterNot(q => q.isNilQuery).filter(q => q.groundTruthWikiTitle.get contains "Northampton")
   val p = new java.io.PrintWriter("./nohoqueries")
-  val featureMap = FileFeatureLoader.loadProtobufDataForQueries(filtered).map(f => f.getMention.getMentionId -> f).toMap
+  val featureMap = FileFeatureLoader.loadProtobufDataForQueries(filtered, ConfInfo.serializedFeaturePath).map(f => f.getMention.getMentionId -> f).toMap
   for (q <- filtered) {
     println(q)
     val features = featureMap(q.mentionId)

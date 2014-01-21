@@ -9,11 +9,10 @@ import org.lemurproject.galago.core.parse.stem.Porter2Stemmer;
 import org.lemurproject.galago.core.parse.stem.Stemmer;
 import org.lemurproject.galago.core.retrieval.Retrieval;
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
+import org.lemurproject.galago.core.retrieval.prf.RelevanceModel1;
 import org.lemurproject.galago.core.retrieval.query.Node;
 import org.lemurproject.galago.core.retrieval.query.StructuredQuery;
-import org.lemurproject.galago.core.scoring.ExpansionModel;
-import org.lemurproject.galago.core.scoring.RelevanceModel;
-import org.lemurproject.galago.core.scoring.WeightedTerm;
+import org.lemurproject.galago.core.retrieval.prf.WeightedTerm;
 import org.lemurproject.galago.core.util.WordLists;
 import org.lemurproject.galago.tupleflow.Parameters;
 
@@ -154,13 +153,12 @@ public class RelevanceModelExpander {
             localRmParameters = localRm2Parameters;
         }
 
-        ExpansionModel rModel = createRelevanceModel(localRmParameters, retrieval);
-        rModel.initialize();
+        RelevanceModel1 rModel = createRelevanceModel(localRmParameters, retrieval);
 
         Set<String> stopwords = WordLists.getWordList("rmstop");
         Set<String> queryTerms = StructuredQuery.findQueryTerms(combineNode);
 
-        List<WeightedTerm> scored = rModel.generateGrams(initialResults);//, fbTerms, queryTerms, stopwords);
+        List<WeightedTerm> scored = rModel.extractGrams(initialResults, localRmParameters, queryTerms, stopwords, null);
 
 
         Set<String> queryTermStemmed = stemTerms(queryTerms);
@@ -190,11 +188,10 @@ public class RelevanceModelExpander {
 //        newChildren.add(expansionNode);
 //        newRoot = new Node("combine", expParams, newChildren, originalNode.getPosition());
 
-        rModel.cleanup();
         return filteredExpansionTerms;
     }
 
-    protected ExpansionModel createRelevanceModel(Parameters parameters, Retrieval r) {
+    protected RelevanceModel1 createRelevanceModel(Parameters parameters, Retrieval r) throws Exception {
         String relevanceModelClass = parameters.get("relevanceModel",globalParameters.get("relevanceModel", "org.lemurproject.galago.core.scoring.RelevanceModel"));
 
         try {
@@ -202,7 +199,7 @@ public class RelevanceModelExpander {
 //        System.out.println("Instantiating Relevance model " + relevanceModelClass);
                 Class clazz = Class.forName(relevanceModelClass);
                 Constructor cons = clazz.getConstructor(Parameters.class, Retrieval.class);
-                ExpansionModel relevanceModel = (ExpansionModel) cons.newInstance(parameters, r);
+                RelevanceModel1 relevanceModel = (RelevanceModel1) cons.newInstance(parameters, r);
                 return relevanceModel;
             }
         } catch (Throwable e) {
@@ -211,7 +208,7 @@ public class RelevanceModelExpander {
 
 //    return new GeneralRelevanceModel(parameters, r);
         // now obsolete rm model
-        return new RelevanceModel(parameters, retrieval);
+        return new RelevanceModel1(retrieval);
     }
 
     private Set<String> stemTerms(Set<String> terms) {

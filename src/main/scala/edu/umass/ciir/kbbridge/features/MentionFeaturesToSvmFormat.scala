@@ -7,11 +7,7 @@ import collection.{immutable, mutable}
  * User: jdalton
  * Date: 4/3/13
  */
-object EntityFeaturesToSvmConverter {
-
-
-  def loadDomainFromFile() {
-    val domainMapFile = "./data/ltr/domainMap"
+class EntityFeaturesToSvmConverter(domainMapFile:String = "./data/ltr/domainMap") {
 
     val domainMap = {
       val domainMap = new mutable.HashMap[String, Int]()
@@ -24,17 +20,13 @@ object EntityFeaturesToSvmConverter {
     }
     val m2eDomainSet = domainMap.map(_._1).toSet
     val map = m2eDomainSet.zipWithIndex.toMap
-    featureDomainMap = map
-    println("Feature domain map loaded with: " + featureDomainMap.size + " entries")
-  }
+    val featureDomainMap = map
+    println("Feature file: " + domainMapFile + " domain map loaded with: " + featureDomainMap.size + " entries")
 
 
-  var featureDomainMap : immutable.Map[String, Int] = Map.empty
-
-
-  def setFeatureDomain(domain: Map[String, Int]) {
-      featureDomainMap = domain
-  }
+//  def setFeatureDomain(domain: Map[String, Int]) {
+//      featureDomainMap = domain
+//  }
 
   //   println("Domain size: " + featureDomainMap.size)
   //   for ((feature, featureIdx) <- featureDomainMap) {
@@ -44,7 +36,9 @@ object EntityFeaturesToSvmConverter {
   def entityToSvmFormat(mention: EntityMention, entity: ScoredWikipediaEntity, features: Map[String, Double]) : String = {
     var sb = new StringBuilder
 
-    val target = if (mention.groundTruth equalsIgnoreCase entity.wikipediaTitle) 1 else 0
+    val groundTruth = mention.groundTruth
+
+    val target = if (groundTruth equalsIgnoreCase entity.wikipediaTitle) 1 else 0
     sb append target
     sb append " "
     sb append "qid:"

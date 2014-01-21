@@ -102,17 +102,17 @@ class SketchRetrieval(val docSearcher: GalagoSearcher, val docSearchParams: Para
   }
 
 
-  def resetKbCache() {
-    kbSearcher.resetDocumentCache()
-  }
+//  def resetKbCache() {
+//    kbSearcher.resetDocumentCache()
+//  }
 
   def getKbDocument(docname: String): Document = {
     kbSearcher.getDocument(docname, kbSearchParams)
   }
 
-  def resetCorpusCache() {
-    docSearcher.resetDocumentCache()
-  }
+//  def resetCorpusCache() {
+//    docSearcher.resetDocumentCache()
+//  }
 
   def getCorpusDocument(docname: String): Document = {
     docSearcher.getDocument(docname, docSearchParams)

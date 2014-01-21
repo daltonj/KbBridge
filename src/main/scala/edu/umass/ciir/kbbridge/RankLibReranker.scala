@@ -11,16 +11,16 @@ import ciir.umass.edu.learning.{RankerFactory, DataPoint}
 import collection.mutable
 import search.DocumentBridgeMap
 import edu.umass.ciir.kbbridge.serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
-import util.ConfInfo
+import edu.umass.ciir.kbbridge.util.{WikiLinkExtractor, ConfInfo}
 import scala.collection.JavaConversions._
 import org.lemurproject.galago.tupleflow.Parameters
 
 
-class RankLibReranker(rankerModelFile: String) {
+class RankLibReranker(rankerModelFile: String, featureConfig:Seq[String] = ConfInfo.rankingFeatures, domainFile:String = "./data/ltr/domainMap") {
 
   val ltrModel = new RankerFactory().loadRanker(rankerModelFile)
-  EntityFeaturesToSvmConverter.loadDomainFromFile()
-  def rerankCandidatesGenerateFeatures(mention: EntityMention, entities: Seq[ScoredWikipediaEntity]): Array[ScoredWikipediaEntity] = {
+  val svmConverter = new EntityFeaturesToSvmConverter(domainFile)
+  def rerankCandidatesGenerateFeatures(mention: EntityMention, entities: Seq[ScoredWikipediaEntity]): Seq[ScoredWikipediaEntity] = {
 
     var scoredDocuments = new ListBuffer[ScoredWikipediaEntity]
 
@@ -44,8 +44,14 @@ class RankLibReranker(rankerModelFile: String) {
       val galagoDoc = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
       entity.document = galagoDoc
 
-      val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(ConfInfo.rankingFeatures, mention, entity, entities)
-      val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
+      if (featureConfig contains "e2e") {
+        entity.incomingLinks = WikiLinkExtractor.simpleExtractorNoContext(galagoDoc).map(a => a.destination).toSet
+        entity.outgoingLinks = galagoDoc.metadata.getOrElse("srcInlinks", "").split("\\s+").toSet
+        entity.combinedLinks = entity.incomingLinks ++ entity.outgoingLinks
+      }
+
+      val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(featureConfig, mention, entity, entities)
+      val svmString = svmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
       try {
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
@@ -54,6 +60,7 @@ class RankLibReranker(rankerModelFile: String) {
       } catch {
         case ex: Exception => println(ex.getMessage + " data line:\n" + svmString)
       }
+      entity.document = null
     }
 
     //println(query)
@@ -64,7 +71,7 @@ class RankLibReranker(rankerModelFile: String) {
 
     }
     //sorted.map(e => println(e.documentName + " " + e.score))
-    sorted.toArray
+    sorted.toSeq
   }
 
 
@@ -90,7 +97,7 @@ class RankLibReranker(rankerModelFile: String) {
       // now for the features
       val m2eFeatures = entity.getRankingFeaturesList.map(f => f.getKey -> f.getValue).toMap
       val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, entity.getScore, entity.getRank)
-      val svmString = EntityFeaturesToSvmConverter.entityToSvmFormat(mention, entityCandidate, m2eFeatures)
+      val svmString = svmConverter.entityToSvmFormat(mention, entityCandidate, m2eFeatures)
       val featureData = new DataPoint(svmString)
       val score = ltrModel.eval(featureData)
       //  println(score)

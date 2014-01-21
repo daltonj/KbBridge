@@ -9,8 +9,16 @@ case class SetMeasures[A](set1:Set[A], set2:Set[A]) {
    if (set1.size == 0 ||  set2.size==0) {
      0.0
    } else {
-     1000.0 * intersect / (set1.size * set2.size)
+     1000.0 * intersect / (set1.size.toDouble * set2.size)
    }
+  }
+
+  def PMI(collectionSize: Long) : Double = {
+    if (set1.size == 0 ||  set2.size==0) {
+      0.0
+    } else {
+      (intersect / collectionSize.toDouble) / ((set1.size/ collectionSize.toDouble) * (set2.size/ collectionSize.toDouble))
+    }
   }
   
  val size = set1.size + set2.size
@@ -19,7 +27,7 @@ case class SetMeasures[A](set1:Set[A], set2:Set[A]) {
     if (size == 0) {
       0.0
     } else {
-      (2.0 * intersect) / size
+      (2.0 * intersect) / size.toDouble
     }
   }
   
@@ -29,7 +37,7 @@ case class SetMeasures[A](set1:Set[A], set2:Set[A]) {
     if (union == 0) {
       0.0
     } else {
-      1.0 * intersect / union
+      1.0 * intersect / union.toDouble
     }
   }
  

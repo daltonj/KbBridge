@@ -1,7 +1,10 @@
 package edu.umass.ciir.kbbridge.eval
 
 import edu.umass.ciir.kbbridge.data.ScoredWikipediaEntity
-import collection.mutable
+import scala.collection.{JavaConversions, mutable}
+import scala.language.implicitConversions
+import scala.collection.JavaConversions._
+
 
 object GalagoEvaluator {
 
@@ -23,7 +26,7 @@ object GalagoEvaluator {
     val writer = new PrintWriter(outputFilePrefix + ".galago_eval")
 
     val translatedMap = translateMap(resultMap)
-    val qsr = new QuerySetResults(translatedMap);
+    val qsr = new QuerySetResults(translatedMap)
     val qrelFile = annotationFile.replace(".tab", ".qrel")
     val qrels = new QuerySetJudgments(qrelFile, true,true)
     val evaluators = for (metric <- metrics) yield {
@@ -50,13 +53,13 @@ object GalagoEvaluator {
     (summaryResults.toSeq, queryByQueryResults.toMap)
   }
 
-  def translateMap(resultMap: Map[String, Seq[ScoredWikipediaEntity]]) : HashMap[String, Array[ScoredDocument]] = {
-    val hashMap = new mutable.HashMap[String, Array[ScoredDocument]]()
+  def translateMap(resultMap: Map[String, Seq[ScoredWikipediaEntity]]) : Map[String, java.util.List[ScoredDocument]] = {
+    val hashMap = mutable.Map[String, java.util.List[ScoredDocument]]()
     for (entry <- resultMap) {
-      val scoredDocs = entry._2.map(swe => new ScoredDocument(swe.wikipediaTitle, swe.rank, swe.score)).toArray
-      hashMap += entry._1 -> scoredDocs
+      val scoredDocs = entry._2.map(swe => new ScoredDocument(swe.wikipediaTitle, swe.rank, swe.score))
+      hashMap += entry._1 -> JavaConversions.seqAsJavaList(scoredDocs)
     }
-    hashMap
+    hashMap.toMap
   }
 
 

@@ -12,13 +12,13 @@ import collection.mutable.ListBuffer
  */
 object FileFeatureLoader {
 
-  def loadProtobufDataForQueries(queries: Seq[EntityMention]): Seq[TacEntityMentionLinkerFeatures] = {
+  def loadProtobufDataForQueries(queries: Seq[EntityMention], baseDir:String): Seq[TacEntityMentionLinkerFeatures] = {
 
     val instances = new ListBuffer[TacEntityMentionLinkerFeatures]
 
     for ((query, idx) <- queries.zipWithIndex) {
 
-      val filename = ConfInfo.serializedFeaturePath + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
+      val filename = baseDir + File.separator + query.docId + "_" + query.mentionId + "_m2eOnly.pbdat"
       if (idx % 500 == 0) {
         println(idx + " loading file: " + filename)
       }
