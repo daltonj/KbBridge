@@ -6,24 +6,18 @@
     <version>0.2</version>
     <inceptionYear>2013</inceptionYear>
     <properties>
-        <scala.version>2.10.1</scala.version>
+      <scala.version>2.10.1</scala.version>
+      <protoc.path>/usr/bin/protoc</protoc.path>
   </properties>
     <name>KB Bridge</name>
 
-    <repositories>
-
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-Tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-
-       <repository>
-            <id>general</id>
-            <name>general</name>
-            <url>http://repo1.maven.org/maven2</url>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>edu.umass.ciir.releases</id>
+      <name>CIIR Nexus Releases</name>
+      <url>http://scm-ciir.cs.umass.edu:8080/nexus/content/repositories/releases</url>
+    </repository>
+  </repositories>
 
 
 <pluginRepositories>
@@ -70,12 +64,6 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>2.5.0</version>
-    </dependency>
-
-    <dependency>
-        <groupId>ilps</groupId>
-        <artifactId>trec-kba</artifactId>
-        <version>1.0</version>
     </dependency>
 
     <!--robust xml parser-->
@@ -174,7 +162,7 @@
         <artifactId>maven-protoc-plugin</artifactId>
         <version>0.3.1</version>
         <configuration>
-          <protocExecutable>/usr/local/bin/protoc</protocExecutable>
+          <protocExecutable>${protoc.path}</protocExecutable>
         </configuration>
         <executions>
           <execution>
