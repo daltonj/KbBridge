@@ -7,7 +7,7 @@ import features.{EntityFeaturesToSvmConverter, Mention2EntityFeatureHasher}
 
 import scala.collection.mutable.ListBuffer
 
-import ciir.umass.edu.learning.{RankerFactory, DataPoint}
+import ciir.umass.edu.learning.{RankerFactory, DenseDataPoint}
 import collection.mutable
 import search.DocumentBridgeMap
 import edu.umass.ciir.kbbridge.serial.EntityMentionProtos.{ScoredWikipediaEntityFeatures, TacEntityMentionLinkerFeatures}
@@ -53,7 +53,7 @@ class RankLibReranker(rankerModelFile: String, featureConfig:Seq[String] = ConfI
       val m2eFeatures = Mention2EntityFeatureHasher.featuresAsMap(featureConfig, mention, entity, entities)
       val svmString = svmConverter.entityToSvmFormat(mention, entity, m2eFeatures)
       try {
-      val featureData = new DataPoint(svmString)
+      val featureData = new DenseDataPoint(svmString)
       val score = ltrModel.eval(featureData)
      //println(score)
       scoredDocuments += new ScoredWikipediaEntity(entity.wikipediaTitle, entity.wikipediaId, score, (rank + 1), featureMap = Some(m2eFeatures))
@@ -98,7 +98,7 @@ class RankLibReranker(rankerModelFile: String, featureConfig:Seq[String] = ConfI
       val m2eFeatures = entity.getRankingFeaturesList.map(f => f.getKey -> f.getValue).toMap
       val entityCandidate = new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, entity.getScore, entity.getRank)
       val svmString = svmConverter.entityToSvmFormat(mention, entityCandidate, m2eFeatures)
-      val featureData = new DataPoint(svmString)
+      val featureData = new DenseDataPoint(svmString)
       val score = ltrModel.eval(featureData)
       //  println(score)
       scoredDocuments += new ScoredWikipediaEntity(entity.getWikipediaTitle, entity.getWikipediaId, score, entity.getRank)
