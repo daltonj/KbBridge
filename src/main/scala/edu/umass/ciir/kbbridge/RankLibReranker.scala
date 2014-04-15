@@ -41,7 +41,12 @@ class RankLibReranker(rankerModelFile: String, featureConfig:Seq[String] = ConfI
     val candsWithRank = candidates.zipWithIndex
     for ((entity, rank) <- candsWithRank) {
       // now for the features
-      val galagoDoc = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle)
+      val docParams = new Parameters()
+
+      docParams.set("text", true)
+      docParams.set("tokenize", true)
+      docParams.set("metadata", true)
+      val galagoDoc = DocumentBridgeMap.getKbDocumentProvider.getDocument(entity.wikipediaTitle,Some(docParams))
       entity.document = galagoDoc
 
       if (featureConfig contains "e2e") {
